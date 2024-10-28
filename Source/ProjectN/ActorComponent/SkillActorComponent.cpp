@@ -21,6 +21,7 @@ void USkillActorComponent::BeginPlay()
 	FTimerHandle RollCollDownTimerHandle;
 	SkillCoolDownTimerHandles.Add(ESkillType::Roll, RollCollDownTimerHandle);
 
+	// Todo. 데이터에서 애니메이션 경로 가져와야 함
 	if (UAnimMontage* RollMontage = LoadObject<UAnimMontage>(nullptr, TEXT("/Game/ProjectN/Animation/AM_Roll")))
 	{
 		SkillActionMontages.Add(ESkillType::Roll, RollMontage);
@@ -38,19 +39,14 @@ void USkillActorComponent::RequestSkill(const int32 SkillTypeIndex)
 	if (EnableSkillFlags[SkillType] == false)
 		return;
 
-	// ���� �̵� ���� ���ϱ�
-	FVector Direction = Owner->GetActorForwardVector();
-	if (Owner->GetCharacterMovement()->Velocity.SizeSquared() > 0)
-	{
-		Direction = Owner->GetCharacterMovement()->Velocity.GetSafeNormal();
-	}
-
 	EnableSkillFlags[SkillType] = false;
 
 	ProcessSkill(SkillType);
 
-	// ��ٿ� Ÿ�̸�
+	// 쿨다운 타이머
+	// Todo. 추후 데이터로 쿨다운 수치 가져와야 함
 	const float RollCooldown = 2.0f;
+
 	GetWorld()->GetTimerManager().SetTimer(SkillCoolDownTimerHandles[SkillType], FTimerDelegate::CreateLambda([this, SkillType]()
 		{
 			EnableSkillFlags[SkillType] = true;

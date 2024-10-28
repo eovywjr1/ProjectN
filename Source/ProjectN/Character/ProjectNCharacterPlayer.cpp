@@ -1,4 +1,4 @@
-// Copyright Epic Games, Inc. All Rights Reserved.
+﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ProjectNCharacterPlayer.h"
 #include "Camera/CameraComponent.h"
@@ -10,7 +10,6 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
-
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -50,7 +49,7 @@ AProjectNCharacterPlayer::AProjectNCharacterPlayer()
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
 
-	// ActorComponent Add
+	// Todo. 추후 액터 타입에 따라 ActorComponent를 추가해야 함
 	AddOwnedComponent(CreateDefaultSubobject<USkillActorComponent>(TEXT("SkillComponent")));
 }
 
@@ -83,6 +82,7 @@ void AProjectNCharacterPlayer::SetupPlayerInputComponent(class UInputComponent* 
 		USkillActorComponent* SkillActorComponent = FindComponentByClass<USkillActorComponent>();
 		if (SkillActorComponent)
 		{
+			// Todo. 직접 하드코딩으로 바인딩하는 것이 아닌 데이터에서 Input을 받고 바인딩시켜야 함
 			EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Triggered, SkillActorComponent, &USkillActorComponent::RequestSkill, static_cast<int32>(ESkillType::Roll));
 		}
 

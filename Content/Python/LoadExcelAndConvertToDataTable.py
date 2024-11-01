@@ -130,8 +130,6 @@ class UnrealExcelConverter:
 
     def createDatatable(self, xlsx: str, sheetName):
         try:
-            
-            
             datatablePath = f"/Game/ProjectN/DataTable/DT_{sheetName}"
             
             if self.editor_asset_lib.does_asset_exist(datatablePath):

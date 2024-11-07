@@ -104,7 +104,10 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
             if pd.isna(Value):
                 continue
             
-            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColIndex]))
+            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColIndex]), None)
+            if Type is None:
+                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ColIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
+                return
             
             if 'TArray' in Type and ';' in str(Value):
                 TempValue = str(Value).split(';')

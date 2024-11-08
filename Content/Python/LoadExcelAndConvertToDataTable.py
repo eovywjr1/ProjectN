@@ -20,6 +20,7 @@ UnrealTypeMapping = {
 UnrealEditorAssetLib = unreal.EditorAssetLibrary()
 
 def ProcessConvertExcel() -> bool:
+    # 해당 경로 xlsx파일 찾기
     FileList = os.listdir(ExcelDir)
     ExcelFileList = []
 
@@ -43,6 +44,7 @@ def ProcessConvertExcel() -> bool:
             unreal.log_error(f"엑셀 파일({ExcelFileNameAndExtension}) 읽기 실패: {str(e)}")
             return False
 
+        # 엑셀의 워크시트 단위로 컨버팅 진행
         for SheetName, SheetData in LoadedExcel.items():
             if SheetData.empty:
                 continue
@@ -80,12 +82,23 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
 
     LoadPropertyList = []
     ExceptPropertyColumnIndexList = []
+    UnrealTypeDict = {}
 
     for ColumnIndex in range(len(PropertyRowDataList)):
-        if PropertyRowDataList[ColumnIndex].startswith("_"):
+        Property = PropertyRowDataList[ColumnIndex]
+
+        # _로 시작하는 Property(변수) 제외
+        if Property.startswith("_"):
             ExceptPropertyColumnIndexList.append(ColumnIndex + 1)
         else:
-            LoadPropertyList.append(PropertyRowDataList[ColumnIndex])
+            LoadPropertyList.append(Property)
+
+            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColumnIndex]), None)
+            if Type is None:
+                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ColumnIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
+                return
+            
+            UnrealTypeDict[Property] = Type
     
     CSVData = []
     CSVData.append(','.join(LoadPropertyList))
@@ -104,10 +117,7 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
             if pd.isna(Value):
                 continue
             
-            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColIndex]), None)
-            if Type is None:
-                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ColIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
-                return
+            Type = UnrealTypeDict[SheetData.iloc[PropertyRowIndex, ColIndex]]
             
             if 'TArray' in Type and ';' in str(Value):
                 TempValue = str(Value).split(';')
@@ -115,9 +125,11 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
                 if 'int32' in Type:
                     Value = f"({','.join(TempValue)})"
                 elif 'FString' in Type:
+                    # FString은 각 요소마다 ""로 감싸야 함
                     TempValue = [f'""{v}""' for v in TempValue]
                     Value = f"({','.join(TempValue)})"
 
+                # TArray로 변환할 때 ""로 감싸야 함
                 Value = f'"{Value}"'
 
             RowData.append(str(Value))

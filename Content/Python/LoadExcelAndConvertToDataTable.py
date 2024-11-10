@@ -70,32 +70,38 @@ def ProcessConvertExcel() -> bool:
         
         unreal.log_error(f"{ExcelFileNameAndExtension} Convert End")
 
+    return True
+
 def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFrame):
     PropertyMask = SheetData.iloc[:, 0] == PropertyRowIdentifier
     if not PropertyMask.any():
         unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {PropertyColumnIndex} 행에 Property 값이 없습니다. 수정해주세요")
         return
 
-    PropertyRowIndex = SheetData[PropertyMask].index[0]
+    PropertyRowIndex = int(SheetData[PropertyMask].index[0])
     TypeRowIndex = PropertyRowIndex - 1
-    PropertyRowDataList = SheetData.iloc[PropertyRowIndex, 1:]
+    StartColIndex = int(PropertyColumnIndex + 1)
+    PropertyRowDataList = SheetData.iloc[PropertyRowIndex, StartColIndex:]
 
     LoadPropertyList = []
     ExceptPropertyColumnIndexList = []
     UnrealTypeDict = {}
 
-    for ColumnIndex in range(len(PropertyRowDataList)):
-        Property = PropertyRowDataList[ColumnIndex]
+    for ColumnIndex, Property in enumerate(PropertyRowDataList):
+        if pd.isna(Property):
+            continue
+
+        ExcelActualColumnIndex = ColumnIndex + StartColIndex
 
         # _로 시작하는 Property(변수) 제외
         if Property.startswith("_"):
-            ExceptPropertyColumnIndexList.append(ColumnIndex + 1)
+            ExceptPropertyColumnIndexList.append(ExcelActualColumnIndex)
         else:
             LoadPropertyList.append(Property)
 
-            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColumnIndex]), None)
+            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ExcelActualColumnIndex]), None)
             if Type is None:
-                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ColumnIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
+                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ExcelActualColumnIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
                 return
             
             UnrealTypeDict[Property] = Type
@@ -104,8 +110,6 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
     CSVData.append(','.join(LoadPropertyList))
         
     StartRowIndex = PropertyRowIndex + 1
-    StartColIndex = PropertyColumnIndex + 1
-
     for RowIndex in range(StartRowIndex, len(SheetData)):
         RowData = []
             
@@ -181,9 +185,9 @@ def main():
     success = ProcessConvertExcel()
     
     if success:
-        print("Conversion completed successfully")
+        unreal.log_warning("Conversion completed successfully")
     else:
-        print("Conversion failed")
+        unreal.log_warning("Conversion failed")
 
 if __name__ == "__main__":
     main()

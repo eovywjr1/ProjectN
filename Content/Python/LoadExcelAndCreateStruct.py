@@ -117,6 +117,10 @@ def LoadExcelAndGetPropertyAndType(ExcelFileNameAndExtension, SheetName, SheetDa
 
     for ColIndex in range(StartColIndex, len(SheetData.columns)):
         Property = SheetData.iloc[PropertyRowIndex, ColIndex]
+
+        if pd.isna(Property):
+            continue
+        
         if Property.startswith("_"):
             continue
 

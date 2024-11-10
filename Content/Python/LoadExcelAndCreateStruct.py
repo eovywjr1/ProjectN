@@ -53,6 +53,9 @@ def ProcessConvertExcel() -> bool:
     ExcelFileList = []
 
     for File in FileList:
+        if File.startswith("_"):
+            continue
+
         if File.endswith(".xlsx"):
             ExcelFileList.append(File)
 
@@ -102,6 +105,8 @@ def ProcessConvertExcel() -> bool:
                 return False
         
         unreal.log_error(f"{ExcelFileNameAndExtension} Convert End")
+    
+    return True
 
 def LoadExcelAndGetPropertyAndType(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFrame) -> tuple[bool, dict]:
     PropertyMask = SheetData.iloc[:, 0] == PropertyRowIdentifier
@@ -120,7 +125,7 @@ def LoadExcelAndGetPropertyAndType(ExcelFileNameAndExtension, SheetName, SheetDa
 
         if pd.isna(Property):
             continue
-        
+
         if Property.startswith("_"):
             continue
 
@@ -138,9 +143,9 @@ def main():
     success = ProcessConvertExcel()
     
     if success:
-        print("Conversion completed successfully")
+        unreal.log_warning("Conversion completed successfully")
     else:
-        print("Conversion failed")
+        unreal.log_warning("Conversion failed")
 
 if __name__ == "__main__":
     main()

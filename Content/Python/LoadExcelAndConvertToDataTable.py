@@ -25,6 +25,9 @@ def ProcessConvertExcel() -> bool:
     ExcelFileList = []
 
     for File in FileList:
+        if File.startswith("_"):
+            continue
+
         if File.endswith(".xlsx"):
             ExcelFileList.append(File)
 

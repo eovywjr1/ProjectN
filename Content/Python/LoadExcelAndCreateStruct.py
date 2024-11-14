@@ -69,7 +69,7 @@ def ProcessConvertExcel() -> bool:
 
         try:
             ExcelFilePath = ExcelDir + "/" + ExcelFileNameAndExtension
-            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None)
+            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None, header=None)
 
         except Exception as e:
             unreal.log_error(f"엑셀 파일({ExcelFileNameAndExtension}) 읽기 실패: {str(e)}")
@@ -85,7 +85,7 @@ def ProcessConvertExcel() -> bool:
                     unreal.log_error(f"{LoadedFileName} - {LoadedSheetName} 과 {ExcelFileNameAndExtension} - {SheetName}이 중복됩니다. 워크시트 이름을 수정해주세요")
                     return False
 
-            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName))
+            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName.lower()))
 
             unreal.log_error(f"{SheetName} 워크시트 Convert Start")
 

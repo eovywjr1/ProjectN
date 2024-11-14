@@ -9,6 +9,7 @@ CSVDir = ProjectDir + "Data/DataCSV"
 
 PropertyRowIdentifier = "Property"
 PropertyColumnIndex = 0
+IndexColumnIndex = 1
 
 UnrealTypeMapping = {
             'int': 'int32',
@@ -41,7 +42,7 @@ def ProcessConvertExcel() -> bool:
 
         try:
             ExcelFilePath = ExcelDir + "/" + ExcelFileNameAndExtension
-            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None)
+            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None, header=None)
 
         except Exception as e:
             unreal.log_error(f"엑셀 파일({ExcelFileNameAndExtension}) 읽기 실패: {str(e)}")
@@ -58,7 +59,7 @@ def ProcessConvertExcel() -> bool:
                     unreal.log_error(f"{LoadedFileName} - {LoadedSheetName} 과 {ExcelFileNameAndExtension} - {SheetName}이 중복됩니다. 워크시트 이름을 수정해주세요")
                     return False
 
-            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName))
+            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName.lower()))
 
             unreal.log_error(f"{SheetName} 워크시트 Convert Start")
 
@@ -78,7 +79,7 @@ def ProcessConvertExcel() -> bool:
 def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFrame):
     PropertyMask = SheetData.iloc[:, 0] == PropertyRowIdentifier
     if not PropertyMask.any():
-        unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {PropertyColumnIndex} 행에 Property 값이 없습니다. 수정해주세요")
+        unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {PropertyColumnIndex} 열에 Property 값이 없습니다. 수정해주세요")
         return
 
     PropertyRowIndex = int(SheetData[PropertyMask].index[0])
@@ -113,9 +114,22 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
     CSVData.append(','.join(LoadPropertyList))
         
     StartRowIndex = PropertyRowIndex + 1
+    IndexList = []
+
     for RowIndex in range(StartRowIndex, len(SheetData)):
-        RowData = []
+        IndexValue = SheetData.iloc[RowIndex, IndexColumnIndex]
+        if pd.isna(IndexValue):
+            unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {RowIndex + 1} 행에 Index가 비어있습니다. 수정해주세요")
+            return
+
+        if IndexValue in IndexList:
+            unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {RowIndex + 1} 행에 Index({IndexValue})가 중복됩니다. 수정해주세요")
+            return
+        
+        IndexList.append(IndexValue)
             
+        RowData = []
+
         for ColIndex in range(StartColIndex, len(SheetData.columns)):
             if ColIndex in ExceptPropertyColumnIndexList:
                 continue

@@ -9,6 +9,7 @@ CSVDir = ProjectDir + "Data/DataCSV"
 
 PropertyRowIdentifier = "Property"
 PropertyColumnIndex = 0
+IndexColumnIndex = 1
 
 UnrealTypeMapping = {
             'int': 'int32',
@@ -20,10 +21,14 @@ UnrealTypeMapping = {
 UnrealEditorAssetLib = unreal.EditorAssetLibrary()
 
 def ProcessConvertExcel() -> bool:
+    # 해당 경로 xlsx파일 찾기
     FileList = os.listdir(ExcelDir)
     ExcelFileList = []
 
     for File in FileList:
+        if File.startswith("_"):
+            continue
+
         if File.endswith(".xlsx"):
             ExcelFileList.append(File)
 
@@ -37,12 +42,13 @@ def ProcessConvertExcel() -> bool:
 
         try:
             ExcelFilePath = ExcelDir + "/" + ExcelFileNameAndExtension
-            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None)
+            LoadedExcel = pd.read_excel(ExcelFilePath, sheet_name=None, header=None)
 
         except Exception as e:
             unreal.log_error(f"엑셀 파일({ExcelFileNameAndExtension}) 읽기 실패: {str(e)}")
             return False
 
+        # 엑셀의 워크시트 단위로 컨버팅 진행
         for SheetName, SheetData in LoadedExcel.items():
             if SheetData.empty:
                 continue
@@ -53,7 +59,7 @@ def ProcessConvertExcel() -> bool:
                     unreal.log_error(f"{LoadedFileName} - {LoadedSheetName} 과 {ExcelFileNameAndExtension} - {SheetName}이 중복됩니다. 워크시트 이름을 수정해주세요")
                     return False
 
-            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName))
+            LodeadExcelAndWorkSheetNameList.append((ExcelFileNameAndExtension, SheetName.lower()))
 
             unreal.log_error(f"{SheetName} 워크시트 Convert Start")
 
@@ -68,34 +74,62 @@ def ProcessConvertExcel() -> bool:
         
         unreal.log_error(f"{ExcelFileNameAndExtension} Convert End")
 
+    return True
+
 def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFrame):
     PropertyMask = SheetData.iloc[:, 0] == PropertyRowIdentifier
     if not PropertyMask.any():
-        unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {PropertyColumnIndex} 행에 Property 값이 없습니다. 수정해주세요")
+        unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {PropertyColumnIndex} 열에 Property 값이 없습니다. 수정해주세요")
         return
 
-    PropertyRowIndex = SheetData[PropertyMask].index[0]
+    PropertyRowIndex = int(SheetData[PropertyMask].index[0])
     TypeRowIndex = PropertyRowIndex - 1
-    PropertyRowDataList = SheetData.iloc[PropertyRowIndex, 1:]
+    StartColIndex = int(PropertyColumnIndex + 1)
+    PropertyRowDataList = SheetData.iloc[PropertyRowIndex, StartColIndex:]
 
     LoadPropertyList = []
     ExceptPropertyColumnIndexList = []
+    UnrealTypeDict = {}
 
-    for ColumnIndex in range(len(PropertyRowDataList)):
-        if PropertyRowDataList[ColumnIndex].startswith("_"):
-            ExceptPropertyColumnIndexList.append(ColumnIndex + 1)
+    for ColumnIndex, Property in enumerate(PropertyRowDataList):
+        if pd.isna(Property):
+            continue
+
+        ExcelActualColumnIndex = ColumnIndex + StartColIndex
+
+        # _로 시작하는 Property(변수) 제외
+        if Property.startswith("_"):
+            ExceptPropertyColumnIndexList.append(ExcelActualColumnIndex)
         else:
-            LoadPropertyList.append(PropertyRowDataList[ColumnIndex])
+            LoadPropertyList.append(Property)
+
+            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ExcelActualColumnIndex]), None)
+            if Type is None:
+                unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {ExcelActualColumnIndex} 행에 Type({Type})이 int, string, list:int, list:string이 아닙니다. 수정해주세요")
+                return
+            
+            UnrealTypeDict[Property] = Type
     
     CSVData = []
     CSVData.append(','.join(LoadPropertyList))
         
     StartRowIndex = PropertyRowIndex + 1
-    StartColIndex = PropertyColumnIndex + 1
+    IndexList = []
 
     for RowIndex in range(StartRowIndex, len(SheetData)):
-        RowData = []
+        IndexValue = SheetData.iloc[RowIndex, IndexColumnIndex]
+        if pd.isna(IndexValue):
+            unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {RowIndex + 1} 행에 Index가 비어있습니다. 수정해주세요")
+            return
+
+        if IndexValue in IndexList:
+            unreal.log_error(f"{ExcelFileNameAndExtension} 파일의 {SheetName} 워크시트에 {RowIndex + 1} 행에 Index({IndexValue})가 중복됩니다. 수정해주세요")
+            return
+        
+        IndexList.append(IndexValue)
             
+        RowData = []
+
         for ColIndex in range(StartColIndex, len(SheetData.columns)):
             if ColIndex in ExceptPropertyColumnIndexList:
                 continue
@@ -104,7 +138,7 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
             if pd.isna(Value):
                 continue
             
-            Type = UnrealTypeMapping.get(str(SheetData.iloc[TypeRowIndex, ColIndex]))
+            Type = UnrealTypeDict[SheetData.iloc[PropertyRowIndex, ColIndex]]
             
             if 'TArray' in Type and ';' in str(Value):
                 TempValue = str(Value).split(';')
@@ -112,9 +146,11 @@ def ConvertExcelToCSV(ExcelFileNameAndExtension, SheetName, SheetData: pd.DataFr
                 if 'int32' in Type:
                     Value = f"({','.join(TempValue)})"
                 elif 'FString' in Type:
+                    # FString은 각 요소마다 ""로 감싸야 함
                     TempValue = [f'""{v}""' for v in TempValue]
                     Value = f"({','.join(TempValue)})"
 
+                # TArray로 변환할 때 ""로 감싸야 함
                 Value = f'"{Value}"'
 
             RowData.append(str(Value))
@@ -166,9 +202,9 @@ def main():
     success = ProcessConvertExcel()
     
     if success:
-        print("Conversion completed successfully")
+        unreal.log_warning("Conversion completed successfully")
     else:
-        print("Conversion failed")
+        unreal.log_warning("Conversion failed")
 
 if __name__ == "__main__":
     main()

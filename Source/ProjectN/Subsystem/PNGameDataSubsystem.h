@@ -20,22 +20,28 @@ public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override final;
 
 	template <typename T>
-	const T* GetData(const FName& Key)
+	const T* GetData(const FName& Key) const
 	{
 		static_assert(TIsDerivedFrom<T, FTableRowBase>::Value, "T must inherit from FTableRowBase");
 
-		if (const TMap<FName, TObjectPtr<const FTableRowBase>>* TypeMap = DataMap.Find(T::StaticStruct()))
+		const TMap<FName, TObjectPtr<const FTableRowBase>>* TypeMap = DataMap.Find(T::StaticStruct());
+		if (TypeMap == nullptr)
 		{
-			if (const TObjectPtr<const FTableRowBase>* FoundData = TypeMap->Find(Key))
-			{
-				return static_cast<const T*>(FoundData->Get());
-			}
+			checkf(false, TEXT("%s 데이터테이블이 없습니다. 데이터테이블이 삭제됐는지 확인해주세요."), *T::StaticStruct()->GetFName().ToString());
+			return nullptr;
 		}
-		
-		ensureMsgf(false, TEXT("%s 의 Row(%s)가 없습니다."), *T::StaticStruct()->GetFName().ToString(), *Key.ToString());
-		
-		return nullptr;
+
+		const TObjectPtr<const FTableRowBase>* FoundData = TypeMap->Find(Key);
+		if (FoundData == nullptr)
+		{
+			checkf(false, TEXT("%s 의 Row(%s)가 없습니다. 데이터가 삭제됐는지 확인해주세요."), *T::StaticStruct()->GetFName().ToString(), *Key.ToString());
+			return nullptr;
+		}
+
+		return static_cast<const T*>(FoundData->Get());
 	}
+	
+	static const UPNGameDataSubsystem* Get();
 
 private:
 	void LoadDataTable();

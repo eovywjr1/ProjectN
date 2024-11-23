@@ -3,6 +3,7 @@
 
 #include "Character/PNPlayerComponent.h"
 
+#include "AbilitySystemComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "PNEnhancedInputComponent.h"
 #include "PNGameplayTags.h"
@@ -10,6 +11,7 @@
 #include "PNPawnData.h"
 #include "GameFramework/Character.h"
 #include "Input/PNInputConfig.h"
+#include "Player/PNPlayerState.h"
 
 UPNPlayerComponent::UPNPlayerComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -45,13 +47,14 @@ void UPNPlayerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(GetPawn<APawn>()->GetController()))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	APawn* Owner = GetPawn<APawn>();
+	APlayerController* PlayerController = Cast<APlayerController>(Owner->GetController());
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
+	Subsystem->AddMappingContext(DefaultMappingContext, 0);
+
+	APNPlayerState* PlayerState = Owner->GetPlayerState<APNPlayerState>();
+	UAbilitySystemComponent* ASComponent = PlayerState->GetAbilitySystemComponent();
+	ASComponent->AddLooseGameplayTag(FPNGameplayTags::FindTagByString("Status.Peace"));
 }
 
 void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)

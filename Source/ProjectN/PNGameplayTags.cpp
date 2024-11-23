@@ -23,19 +23,17 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input.");
 	AddTag(InputTag_Look, "InputTag.Look", "Look input.");
 
-	AddMovementModeTag(MovementMode_Walking, "Movement.Mode.Walking", MOVE_Walking);
-	AddTag(MovementMode_Jumping, "Movement.Mode.Jumping", "MOVE_Jumping");
+	AddTag(Status_Idle, "Status.Idle", "Status Idle");
+	AddTag(Status_Walking, "Status.Walking", "Status Walking");
+	AddTag(Status_Jumping, "Status.Jumping", "Status Jumping");
+	
+	AddTag(Status_Peace, "Status.Peace", "Status Peace");
+	AddTag(Status_Fight, "Status.Fight", "Status Fight");
 }
 
 void FPNGameplayTags::AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment)
 {
 	OutTag = UGameplayTagsManager::Get().AddNativeGameplayTag(TagName, FString(TEXT("(Native) ")) + TagComment);
-}
-
-void FPNGameplayTags::AddMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 MovementMode)
-{
-	AddTag(OutTag, TagName, "Character movement mode tag.");
-	GameplayTags.MovementModeTagMap.Add(MovementMode, OutTag);
 }
 
 FGameplayTag FPNGameplayTags::FindTagByString(FString TagString, bool bMatchPartialString)

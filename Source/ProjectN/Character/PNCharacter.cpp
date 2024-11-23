@@ -23,7 +23,7 @@ APNCharacter::APNCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -42,32 +42,39 @@ APNCharacter::APNCharacter()
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 
 	/////////////////////////////////////////////////////////////////////////////////////////
-	
+
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
-	
+
 	PawnComponent = CreateDefaultSubobject<UPNPawnComponent>(TEXT("PNPawnComponent"));
+}
+
+UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const
+{
+	return PawnComponent->GetAbilitySystemComponent();
 }
 
 void APNCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
+
+	if (APNPlayerState* PNPlayerState = GetPlayerState<APNPlayerState>())
+	{
+		// Todo. 캐릭터 스폰할 때 AbilitySystemComponent 초기화해줘야 함
+		UAbilitySystemComponent* ASComponent = PNPlayerState->GetAbilitySystemComponent();
+		PawnComponent->SetAbilitySystemComponent(ASComponent);
+		ASComponent->InitAbilityActorInfo(PNPlayerState, this);
 	
-	// if (APNPlayerState* CharacterPlayerState = GetPlayerState<APNPlayerState>())
-	// {
-	// 	AbilitySystemComponent = CharacterPlayerState->GetAbilitySystemComponent();
-	// 	AbilitySystemComponent->InitAbilityActorInfo(CharacterPlayerState, this);
-	//
-	// 	int32 InputID = 0;
-	//
-	// 	// for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
-	// 	// {
-	// 	// 	FGameplayAbilitySpec AbilitySpec(Ability);
-	// 	// 	AbilitySpec.InputID = InputID;
-	// 	// 	++InputID;
-	// 	//
-	// 	// 	AbilitySystemComponent->GiveAbility(AbilitySpec);
-	// 	// }
-	// }
+		// int32 InputID = 0;
+	
+		// for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
+		// {
+		// 	FGameplayAbilitySpec AbilitySpec(Ability);
+		// 	AbilitySpec.InputID = InputID;
+		// 	++InputID;
+		//
+		// 	AbilitySystemComponent->GiveAbility(AbilitySpec);
+		// }
+	}
 }
 
 void APNCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)

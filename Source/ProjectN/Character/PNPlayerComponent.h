@@ -27,9 +27,11 @@ public:
 	
 private:
 	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_Jumping(const FInputActionValue& InputActionValue);
+	void Input_StopJumping(const FInputActionValue& InputActionValue);
+	void Input_Look(const FInputActionValue& InputActionValue);
 	
 private:
-	/** MappingContext */
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 };

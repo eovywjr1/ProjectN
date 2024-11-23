@@ -8,6 +8,7 @@
 #include "PNGameplayTags.h"
 #include "PNPawnComponent.h"
 #include "PNPawnData.h"
+#include "GameFramework/Character.h"
 #include "Input/PNInputConfig.h"
 
 UPNPlayerComponent::UPNPlayerComponent(const FObjectInitializer& ObjectInitializer)
@@ -32,6 +33,9 @@ void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 				UPNEnhancedInputComponent* PNEnhancedInputComponent = CastChecked<UPNEnhancedInputComponent>(PlayerInputComponent);
 
 				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Input_Jumping);
+				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::Input_StopJumping);
+				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 			}
 		}
 	}
@@ -40,10 +44,8 @@ void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 void UPNPlayerComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	APawn* Pawn = GetPawn<APawn>();
 
-	if (APlayerController* PlayerController = Cast<APlayerController>(Pawn->GetController()))
+	if (APlayerController* PlayerController = Cast<APlayerController>(GetPawn<APawn>()->GetController()))
 	{
 		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
@@ -63,8 +65,31 @@ void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 		const FRotator YawRotation(0, Rotation.Yaw, 0);
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
- 
+
 		Pawn->AddMovementInput(ForwardDirection, MovementVector.Y);
 		Pawn->AddMovementInput(RightDirection, MovementVector.X);
+	}
+}
+
+void UPNPlayerComponent::Input_Jumping(const FInputActionValue& InputActionValue)
+{
+	GetPawnChecked<ACharacter>()->Jump();
+}
+
+void UPNPlayerComponent::Input_StopJumping(const FInputActionValue& InputActionValue)
+{
+	GetPawnChecked<ACharacter>()->StopJumping();
+}
+
+void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)
+{
+	APawn* Pawn = GetPawn<APawn>();
+
+	if (AController* Controller = Pawn->GetController())
+	{
+		const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
+
+		Pawn->AddControllerYawInput(LookAxisVector.X);
+		Pawn->AddControllerPitchInput(LookAxisVector.Y);
 	}
 }

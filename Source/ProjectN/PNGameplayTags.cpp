@@ -20,8 +20,11 @@ void FPNGameplayTags::InitializeNativeTags()
 void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
 	AddTag(InputTag_Move, "InputTag.Move", "Move input.");
-	
+	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input.");
+	AddTag(InputTag_Look, "InputTag.Look", "Look input.");
+
 	AddMovementModeTag(MovementMode_Walking, "Movement.Mode.Walking", MOVE_Walking);
+	AddTag(MovementMode_Jumping, "Movement.Mode.Jumping", "MOVE_Jumping");
 }
 
 void FPNGameplayTags::AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment)
@@ -39,7 +42,7 @@ FGameplayTag FPNGameplayTags::FindTagByString(FString TagString, bool bMatchPart
 {
 	const UGameplayTagsManager& Manager = UGameplayTagsManager::Get();
 	FGameplayTag Tag = Manager.RequestGameplayTag(FName(*TagString), false);
-	
+
 	check(Tag.IsValid() || bMatchPartialString);
 
 	if (Tag.IsValid() == false && bMatchPartialString)

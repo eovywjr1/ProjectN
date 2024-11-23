@@ -26,9 +26,12 @@ public:
 
 public:
 	FGameplayTag InputTag_Move;
+	FGameplayTag InputTag_Jump;
+	FGameplayTag InputTag_Look;
 
 	FGameplayTag MovementMode_Idle;
 	FGameplayTag MovementMode_Walking;
+	FGameplayTag MovementMode_Jumping;
 
 	TMap<uint8, FGameplayTag> MovementModeTagMap;
 	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;

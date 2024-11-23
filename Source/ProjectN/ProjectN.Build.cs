@@ -8,6 +8,16 @@ public class ProjectN : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput" });
+		PublicDependencyModuleNames.AddRange(new string[]
+			{ "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "EnhancedInput", "ModularGameplay" });
+
+		PrivateIncludePaths.AddRange(new string[] { "ProjectN" });
+		
+		PrivateDependencyModuleNames.AddRange(new string[] {
+			"GameFeatures",
+			"GameplayAbilities",
+			"GameplayTasks",
+			"GameplayTags"
+		});
 	}
 }

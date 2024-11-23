@@ -1,19 +1,25 @@
 ﻿// Copyright Epic Games, Inc. All Rights Reserved.
 
-#include "ProjectNCharacterPlayer.h"
+#include "PNCharacter.h"
+
+#include "AbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
-#include "ProjectN/ActorComponent/SkillActorComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
+#include "PNEnhancedInputComponent.h"
+#include "PNPawnComponent.h"
+#include "PNPlayerComponent.h"
+#include "Abilities/GameplayAbility.h"
+#include "Player/PNPlayerState.h"
 
 //////////////////////////////////////////////////////////////////////////
 
-AProjectNCharacterPlayer::AProjectNCharacterPlayer()
+APNCharacter::APNCharacter()
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -45,79 +51,59 @@ AProjectNCharacterPlayer::AProjectNCharacterPlayer()
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
-
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
-
-	// Todo. 추후 액터 타입에 따라 ActorComponent를 추가해야 함
-	AddOwnedComponent(CreateDefaultSubobject<USkillActorComponent>(TEXT("SkillComponent")));
+	
+	/////////////////////////////////////////////////////////////////////////////////////////
+	
+	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
+	
+	PawnComponent = CreateDefaultSubobject<UPNPawnComponent>(TEXT("PNPawnComponent"));
 }
 
-void AProjectNCharacterPlayer::BeginPlay()
+void APNCharacter::PossessedBy(AController* NewController)
 {
-	// Call the base class  
-	Super::BeginPlay();
-
-	//Add Input Mapping Context
-	if (APlayerController* PlayerController = Cast<APlayerController>(Controller))
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
-		{
-			Subsystem->AddMappingContext(DefaultMappingContext, 0);
-		}
-	}
+	Super::PossessedBy(NewController);
+	
+	// if (APNPlayerState* CharacterPlayerState = GetPlayerState<APNPlayerState>())
+	// {
+	// 	AbilitySystemComponent = CharacterPlayerState->GetAbilitySystemComponent();
+	// 	AbilitySystemComponent->InitAbilityActorInfo(CharacterPlayerState, this);
+	//
+	// 	int32 InputID = 0;
+	//
+	// 	// for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
+	// 	// {
+	// 	// 	FGameplayAbilitySpec AbilitySpec(Ability);
+	// 	// 	AbilitySpec.InputID = InputID;
+	// 	// 	++InputID;
+	// 	//
+	// 	// 	AbilitySystemComponent->GiveAbility(AbilitySpec);
+	// 	// }
+	// }
 }
 
 //////////////////////////////////////////////////////////////////////////
 // Input
 
-void AProjectNCharacterPlayer::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
+void APNCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
+	// 이 시점에서 InputComponent가 유효함
+	if (UPNPlayerComponent* PlayerComponent = FindComponentByClass<UPNPlayerComponent>())
+	{
+		PlayerComponent->InitializePlayerInput(PlayerInputComponent);
+	}
+	
 	// Set up action bindings
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(PlayerInputComponent)) {
 		//Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Triggered, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
 
-		USkillActorComponent* SkillActorComponent = FindComponentByClass<USkillActorComponent>();
-		if (SkillActorComponent)
-		{
-			// Todo. 직접 하드코딩으로 바인딩하는 것이 아닌 데이터에서 Input을 받고 바인딩시켜야 함
-			EnhancedInputComponent->BindAction(RollAction, ETriggerEvent::Triggered, SkillActorComponent, &USkillActorComponent::RequestSkill, static_cast<int32>(ESkillType::Roll));
-		}
-
-		//Moving
-		EnhancedInputComponent->BindAction(MoveAction, ETriggerEvent::Triggered, this, &AProjectNCharacterPlayer::Move);
-
 		//Looking
-		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &AProjectNCharacterPlayer::Look);
+		EnhancedInputComponent->BindAction(LookAction, ETriggerEvent::Triggered, this, &APNCharacter::Look);
 	}
 }
 
-void AProjectNCharacterPlayer::Move(const FInputActionValue& Value)
-{
-	// input is a Vector2D
-	FVector2D MovementVector = Value.Get<FVector2D>();
-
-	if (Controller)
-	{
-		// find out which way is forward
-		const FRotator Rotation = Controller->GetControlRotation();
-		const FRotator YawRotation(0, Rotation.Yaw, 0);
-
-		// get forward vector
-		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
-		// get right vector 
-		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-		// add movement 
-		AddMovementInput(ForwardDirection, MovementVector.Y);
-		AddMovementInput(RightDirection, MovementVector.X);
-	}
-}
-
-void AProjectNCharacterPlayer::Look(const FInputActionValue& Value)
+void APNCharacter::Look(const FInputActionValue& Value)
 {
 	// input is a Vector2D
 	FVector2D LookAxisVector = Value.Get<FVector2D>();

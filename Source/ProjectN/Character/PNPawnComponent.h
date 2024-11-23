@@ -23,6 +23,8 @@ public:
 	UPNPawnComponent(const FObjectInitializer& ObjectInitializer);
 	
 	const UPNPawnData* GetPawnData() const { return PawnData; }
+	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
+	void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystemComponent) { AbilitySystemComponent = InAbilitySystemComponent; }
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Pawn")

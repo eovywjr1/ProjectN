@@ -29,17 +29,16 @@ public:
 	FGameplayTag InputTag_Jump;
 	FGameplayTag InputTag_Look;
 
-	FGameplayTag MovementMode_Idle;
-	FGameplayTag MovementMode_Walking;
-	FGameplayTag MovementMode_Jumping;
-
-	TMap<uint8, FGameplayTag> MovementModeTagMap;
-	TMap<uint8, FGameplayTag> CustomMovementModeTagMap;
-
+	FGameplayTag Status_Idle;
+	FGameplayTag Status_Walking;
+	FGameplayTag Status_Jumping;
+	
+	FGameplayTag Status_Peace;
+	FGameplayTag Status_Fight;
+	
 private:
 	void AddAllTags(UGameplayTagsManager& Manager);
 	void AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment);
-	void AddMovementModeTag(FGameplayTag& OutTag, const ANSICHAR* TagName, uint8 MovementMode);
 
 private:
 	static FPNGameplayTags GameplayTags;

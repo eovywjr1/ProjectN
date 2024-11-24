@@ -7,6 +7,7 @@
 #include "PNPawnData.generated.h"
 
 class UPNInputConfig;
+class UPNAbilitySet;
 
 /**
  * 
@@ -17,7 +18,9 @@ class PROJECTN_API UPNPawnData : public UPrimaryDataAsset
 	GENERATED_BODY()
 	
 public:
-	// Input configuration used by player controlled pawns to create input mappings and bind input actions.
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UPNInputConfig> InputConfig;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TArray<TObjectPtr<UPNAbilitySet>> AbilitySets;
 };

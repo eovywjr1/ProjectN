@@ -10,7 +10,8 @@
 /**
  * 
  */
- 
+
+struct FGameplayTag;
 struct FInputActionValue;
 
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
@@ -21,15 +22,19 @@ class PROJECTN_API UPNPlayerComponent : public UPawnComponent
 public:
 	UPNPlayerComponent(const FObjectInitializer& ObjectInitializer);
 
-	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
-	
 	virtual void BeginPlay() override final;
 	
+	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
+	void EnableInput(bool bIsEnable) const;
+
 private:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Jumping(const FInputActionValue& InputActionValue);
 	void Input_StopJumping(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
+	
+	void Input_AbilityPressed(FGameplayTag InputTag);
+	void Input_AbilityReleased(FGameplayTag InputTag);
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AllowPrivateAccess = "true"))

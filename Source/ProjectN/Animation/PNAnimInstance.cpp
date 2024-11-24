@@ -4,7 +4,6 @@
 #include "Animation/PNAnimInstance.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
 #include "PNGameplayTags.h"
 
 const FString PeaceString = "Status.Peace";
@@ -19,12 +18,9 @@ void UPNAnimInstance::NativeBeginPlay()
 
 	if (AActor* Owner = GetOwningActor())
 	{
-		if (IAbilitySystemInterface* ASInterface = Cast<IAbilitySystemInterface>(Owner))
+		if (UAbilitySystemComponent* ASC = Owner->FindComponentByClass<UAbilitySystemComponent>())
 		{
-			if (UAbilitySystemComponent* ASComponent = ASInterface->GetAbilitySystemComponent())
-			{
-				ASComponent->RegisterGameplayTagEvent(FPNGameplayTags::FindTagByString(PeaceString)).AddUObject(this, &UPNAnimInstance::OnPeaceTagChanged);
-			}
+			ASC->RegisterGameplayTagEvent(FPNGameplayTags::FindTagByString(PeaceString)).AddUObject(this, &UPNAnimInstance::OnPeaceTagChanged);
 		}
 	}
 }

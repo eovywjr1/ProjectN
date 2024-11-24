@@ -11,7 +11,7 @@
  * 
  */
 
-class UAbilitySystemComponent;
+class UPNAbilitySystemComponent;
 class UPNPawnData;
  
 UCLASS()
@@ -23,13 +23,13 @@ public:
 	UPNPawnComponent(const FObjectInitializer& ObjectInitializer);
 	
 	const UPNPawnData* GetPawnData() const { return PawnData; }
-	UAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
-	void SetAbilitySystemComponent(UAbilitySystemComponent* InAbilitySystemComponent) { AbilitySystemComponent = InAbilitySystemComponent; }
+	UPNAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
+	void SetAbilitySystemComponent(UPNAbilitySystemComponent* InAbilitySystemComponent) { AbilitySystemComponent = InAbilitySystemComponent; }
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Pawn")
 	TObjectPtr<const UPNPawnData> PawnData;
 
 	UPROPERTY()
-	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UPNAbilitySystemComponent> AbilitySystemComponent;
 };

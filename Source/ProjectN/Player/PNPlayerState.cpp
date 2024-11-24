@@ -3,9 +3,14 @@
 
 #include "Player/PNPlayerState.h"
 
-#include "AbilitySystemComponent.h"
+#include "AbilitySystem/PNAbilitySystemComponent.h"
 
 APNPlayerState::APNPlayerState()
 {
-	AbilitySystemComponent = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent = CreateDefaultSubobject<UPNAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+}
+
+UAbilitySystemComponent* APNPlayerState::GetAbilitySystemComponent() const
+{
+	return AbilitySystemComponent;
 }

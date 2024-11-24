@@ -2,19 +2,16 @@
 
 #include "PNCharacter.h"
 
-#include "AbilitySystemComponent.h"
-#include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
-#include "GameFramework/SpringArmComponent.h"
-#include "EnhancedInputComponent.h"
-#include "EnhancedInputSubsystems.h"
 #include "PNEnhancedInputComponent.h"
 #include "PNPawnComponent.h"
+#include "PNPawnData.h"
 #include "PNPlayerComponent.h"
-#include "Abilities/GameplayAbility.h"
+#include "AbilitySystem/PNAbilitySet.h"
+#include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Player/PNPlayerState.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -59,13 +56,22 @@ void APNCharacter::PossessedBy(AController* NewController)
 
 	if (APNPlayerState* PNPlayerState = GetPlayerState<APNPlayerState>())
 	{
-		// Todo. 캐릭터 스폰할 때 AbilitySystemComponent 초기화해줘야 함
+		// Todo. 캐릭터 스폰할 때 PawnData, AbilitySystemComponent 초기화해줘야 함
 		UAbilitySystemComponent* ASComponent = PNPlayerState->GetAbilitySystemComponent();
-		PawnComponent->SetAbilitySystemComponent(ASComponent);
+		PawnComponent->SetAbilitySystemComponent(CastChecked<UPNAbilitySystemComponent>(ASComponent));
 		ASComponent->InitAbilityActorInfo(PNPlayerState, this);
-	
+		
+		for( const UPNAbilitySet* AbilitySet : PawnComponent->GetPawnData()->AbilitySets)
+		{
+			if(AbilitySet == nullptr){
+				continue;
+			}
+			
+			AbilitySet->GiveAbilityToAbilitySystem(ASComponent, this);
+		}
+
 		// int32 InputID = 0;
-	
+
 		// for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
 		// {
 		// 	FGameplayAbilitySpec AbilitySpec(Ability);
@@ -79,7 +85,6 @@ void APNCharacter::PossessedBy(AController* NewController)
 
 void APNCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {
-	// 이 시점에서 InputComponent가 유효함
 	if (UPNPlayerComponent* PlayerComponent = FindComponentByClass<UPNPlayerComponent>())
 	{
 		PlayerComponent->InitializePlayerInput(PlayerInputComponent);

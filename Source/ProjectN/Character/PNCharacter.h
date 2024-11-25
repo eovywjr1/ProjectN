@@ -22,10 +22,8 @@ public:
 	virtual void PossessedBy(AController* NewController) override final;
 
 protected:
-	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 private:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Character", Meta = (AllowPrivateAccess = "true"))
 	TObjectPtr<UPNPawnComponent> PawnComponent;
 };

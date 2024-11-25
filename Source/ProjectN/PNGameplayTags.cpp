@@ -23,11 +23,13 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input.");
 	AddTag(InputTag_Look, "InputTag.Look", "Look input.");
 	AddTag(InputTag_Roll, "InputTag.Roll", "Roll input.");
+	AddTag(InputTag_Guard, "InputTag.Guard", "Guard input.");
 
 	AddTag(Status_Idle, "Status.Idle", "Status Idle");
 	AddTag(Status_Walking, "Status.Walking", "Status Walking");
 	AddTag(Status_Jumping, "Status.Jumping", "Status Jumping");
 	AddTag(Status_Roll, "Status.Roll", "Status Roll");
+	AddTag(Status_Guard, "Status.Guard", "Status Guard");
 	
 	AddTag(Status_Peace, "Status.Peace", "Status Peace");
 	AddTag(Status_Fight, "Status.Fight", "Status Fight");

@@ -85,7 +85,12 @@ void UPNPlayerComponent::BeginPlay()
 
 	APNPlayerState* PlayerState = Owner->GetPlayerState<APNPlayerState>();
 	UAbilitySystemComponent* ASComponent = PlayerState->GetAbilitySystemComponent();
-	ASComponent->AddLooseGameplayTag(FPNGameplayTags::FindTagByString("Status.Peace"));
+	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
+	
+#ifdef WITH_EDITOR
+	// 테스트 용도
+	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
+#endif
 }
 
 void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)

@@ -7,36 +7,57 @@
 #include "PNLogChannels.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Character/PNPlayerComponent.h"
+#include "GameFramework/Character.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
-UGameplayAbilityTask_Roll* UGameplayAbilityTask_Roll::CreateRollProxy(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InDuration, float InDistance, FVector InDirection)
+UGameplayAbilityTask_RollMove* UGameplayAbilityTask_RollMove::CreateRollProxy(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InDuration, float InDistance)
 {
 	check(OwningAbility);
 
-	UGameplayAbilityTask_Roll* MyObj = NewAbilityTask<UGameplayAbilityTask_Roll>(OwningAbility, TaskInstanceName);
+	UGameplayAbilityTask_RollMove* MyObj = NewAbilityTask<UGameplayAbilityTask_RollMove>(OwningAbility, TaskInstanceName);
 	MyObj->Duration = InDuration;
 	MyObj->Distance = InDistance;
-	MyObj->Direction = InDirection;
 
 	return MyObj;
 }
 
-void UGameplayAbilityTask_Roll::Activate()
+void UGameplayAbilityTask_RollMove::Activate()
 {
 	Super::Activate();
 
 	bTickingTask = true;
 }
 
-void UGameplayAbilityTask_Roll::TickTask(float DeltaTime)
+void UGameplayAbilityTask_RollMove::TickTask(float DeltaTime)
 {
-	AActor* Avatar = GetAvatarActor();
-	if (Avatar == nullptr)
+	ACharacter* Avatar = CastChecked<ACharacter>(GetAvatarActor());
+	const UPNPlayerComponent* PlayerComponent = Avatar->FindComponentByClass<UPNPlayerComponent>();
+	if (PlayerComponent == nullptr)
 	{
 		return;
 	}
 
-	const FVector NewLocation = Avatar->GetActorLocation() + Direction * (Distance / Duration) * DeltaTime;
-	Avatar->SetActorLocation(NewLocation);
+	const FVector2D LastMovementInput = PlayerComponent->GetLastMovementInput();
+	FVector RollDirection;
+
+	if (LastMovementInput.IsNearlyZero())
+	{
+		RollDirection = Avatar->GetActorForwardVector();
+	}
+	else
+	{
+		const FRotator Rotation = Avatar->GetControlRotation();
+		const FRotator YawRotation(0, Rotation.Yaw, 0);
+		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
+		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
+
+		RollDirection = (ForwardDirection * LastMovementInput.Y + RightDirection * LastMovementInput.X).GetSafeNormal();
+	}
+	
+	if (UCharacterMovementComponent* MovementComponent = Avatar->GetCharacterMovement())
+	{
+		MovementComponent->Velocity = RollDirection * (Distance / Duration);
+	}
 }
 
 UPNGameplayAbility_Roll::UPNGameplayAbility_Roll()
@@ -50,12 +71,7 @@ void UPNGameplayAbility_Roll::ActivateAbility(const FGameplayAbilitySpecHandle H
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	APawn* AvatarActor = Cast<APawn>(ActorInfo->AvatarActor.Get());
-	if (AvatarActor == nullptr)
-	{
-		return;
-	}
-
+	APawn* AvatarActor = CastChecked<APawn>(ActorInfo->AvatarActor.Get());
 	UPNPlayerComponent* PlayerComponent = AvatarActor->FindComponentByClass<UPNPlayerComponent>();
 	if (PlayerComponent == nullptr)
 	{
@@ -76,13 +92,8 @@ void UPNGameplayAbility_Roll::ActivateAbility(const FGameplayAbilitySpecHandle H
 		UE_LOG(LogPN, Error, TEXT("ActionMontage Not Found in Roll Ability"));
 	}
 
-	FVector Direction = AvatarActor->GetLastMovementInputVector();
-	if (Direction.IsNearlyZero())
-	{
-		Direction = AvatarActor->GetActorForwardVector();
-	}
-
-	UGameplayAbilityTask_Roll* RollTask = UGameplayAbilityTask_Roll::CreateRollProxy(this, TEXT("Roll"), RollDuration, RollDistance, Direction);
+	// Todo. RollDuration을 Montage와 같게 할 것인지 논의 필요
+	UGameplayAbilityTask_RollMove* RollTask = UGameplayAbilityTask_RollMove::CreateRollProxy(this, TEXT("Roll"), RollDuration, RollDistance);
 	RollTask->ReadyForActivation();
 }
 

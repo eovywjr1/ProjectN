@@ -47,12 +47,7 @@ void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 
 void UPNPlayerComponent::EnableInput(bool bIsEnable) const
 {
-	APawn* Owner = GetPawn<APawn>();
-	if (Owner == nullptr)
-	{
-		return;
-	}
-
+	APawn* Owner = GetPawnChecked<APawn>();
 	APlayerController* PlayerController = Cast<APlayerController>(Owner->GetController());
 	if (PlayerController == nullptr)
 	{
@@ -68,6 +63,7 @@ void UPNPlayerComponent::EnableInput(bool bIsEnable) const
 	if (bIsEnable)
 	{
 		Subsystem->AddMappingContext(DefaultMappingContext, 0);
+		Subsystem->AddMappingContext(CameraMappingContext, 0);
 	}
 	else
 	{
@@ -114,6 +110,8 @@ void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 
 	Pawn->AddMovementInput(ForwardDirection, MovementVector.Y);
 	Pawn->AddMovementInput(RightDirection, MovementVector.X);
+	
+	LastMovementInput = MovementVector;
 }
 
 void UPNPlayerComponent::Input_Jumping(const FInputActionValue& InputActionValue)

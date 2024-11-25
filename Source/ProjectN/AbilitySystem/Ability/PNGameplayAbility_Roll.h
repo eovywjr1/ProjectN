@@ -10,13 +10,12 @@
 class UAnimMontage;
 
 UCLASS()
-class UGameplayAbilityTask_Roll : public UAbilityTask
+class UGameplayAbilityTask_RollMove : public UAbilityTask
 {
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, Category="Ability|Tasks", meta = (DefaultToSelf = "OwningAbility"))
-	static UGameplayAbilityTask_Roll* CreateRollProxy(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InDuration, float InDistance, FVector InDirection);
+	static UGameplayAbilityTask_RollMove* CreateRollProxy(UGameplayAbility* OwningAbility, FName TaskInstanceName, float InDuration, float InDistance);
 
 	virtual void Activate() override;
 	virtual void TickTask(float DeltaTime) override final;
@@ -24,7 +23,6 @@ public:
 private:
 	float Duration;
 	float Distance;
-	FVector Direction;
 };
 
 /**

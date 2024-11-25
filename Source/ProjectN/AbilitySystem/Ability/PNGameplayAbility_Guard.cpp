@@ -10,6 +10,8 @@
 
 UPNGameplayAbility_Guard::UPNGameplayAbility_Guard() 
 {
+	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+
 	const FPNGameplayTags& GameplayTags = FPNGameplayTags::Get();
 	
 	ActivationOwnedTags.AddTag(GameplayTags.Status_Guard);

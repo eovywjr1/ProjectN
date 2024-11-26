@@ -3,6 +3,7 @@
 
 #include "AbilitySystem/Ability/PNGameplayAbility_Attack.h"
 
+#include "PNGameplayTags.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -10,6 +11,8 @@
 UPNGameplayAbility_Attack::UPNGameplayAbility_Attack() 
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	
+	ActivationBlockedTags.AddTag(FPNGameplayTags::FindTagByString("Status.Attack"));
 }
 
 void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

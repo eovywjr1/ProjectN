@@ -31,8 +31,6 @@ public:
 
 private:
 	void Input_Move(const FInputActionValue& InputActionValue);
-	void Input_Jumping(const FInputActionValue& InputActionValue);
-	void Input_StopJumping(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
 	
 	void Input_AbilityPressed(FGameplayTag InputTag);

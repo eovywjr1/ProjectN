@@ -35,8 +35,6 @@ void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 				UPNEnhancedInputComponent* PNEnhancedInputComponent = CastChecked<UPNEnhancedInputComponent>(PlayerInputComponent);
 
 				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Triggered, this, &ThisClass::Input_Jumping);
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Jump, ETriggerEvent::Completed, this, &ThisClass::Input_StopJumping);
 				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
 
 				PNEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityPressed, &ThisClass::Input_AbilityReleased);
@@ -117,28 +115,6 @@ void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 	Pawn->AddMovementInput(RightDirection, MovementVector.X);
 	
 	LastMovementInput = MovementVector;
-}
-
-void UPNPlayerComponent::Input_Jumping(const FInputActionValue& InputActionValue)
-{
-	ACharacter* Owner = GetPawn<ACharacter>();
-	if (Owner == nullptr)
-	{
-		return;
-	}
-
-	Owner->Jump();
-}
-
-void UPNPlayerComponent::Input_StopJumping(const FInputActionValue& InputActionValue)
-{
-	ACharacter* Owner = GetPawn<ACharacter>();
-	if (Owner == nullptr)
-	{
-		return;
-	}
-
-	Owner->StopJumping();
 }
 
 void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)

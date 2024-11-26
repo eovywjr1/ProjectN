@@ -28,12 +28,9 @@ public:
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Jump;
 	FGameplayTag InputTag_Look;
-	FGameplayTag InputTag_Roll;
-	FGameplayTag InputTag_Guard;
 
 	FGameplayTag Status_Idle;
-	FGameplayTag Status_Walking;
-	FGameplayTag Status_Jumping;
+	FGameplayTag Status_Jump;
 	FGameplayTag Status_Roll;
 	FGameplayTag Status_Guard;
 	

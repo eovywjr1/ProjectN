@@ -30,5 +30,5 @@ protected:
 	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Attack)
-	TObjectPtr<UAnimMontage> ComboActionMontage = nullptr;
+	TObjectPtr<UAnimMontage> AttackActionMontage = nullptr;
 };

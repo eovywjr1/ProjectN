@@ -22,7 +22,7 @@ void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 	ACharacter* AvatarActor = CastChecked<ACharacter>(ActorInfo->AvatarActor.Get());
 	AvatarActor->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	
-	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), ComboActionMontage, 1.0f, GetNextSectionName());
+	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("PlayAttack"), AttackActionMontage, 1.0f, GetNextSectionName());
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleteCallback);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnInterruptedCallback);
 	PlayAttackTask->ReadyForActivation();

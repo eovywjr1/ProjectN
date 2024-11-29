@@ -13,7 +13,7 @@ FPNPercent FPNPercent::FromFraction(int32 Numerator, int32 Denominator)
 	}
 
 	FPNPercent Result;
-	Result.RawValue = Numerator * static_cast<int32>(EPercentType::E1Percent) / Denominator * 100;
+	Result.RawValue = GetClampedPercent(Numerator * static_cast<int32>(EPercentType::E1Percent) / Denominator * 100);
 	
 	return Result;
 }

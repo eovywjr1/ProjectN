@@ -29,6 +29,8 @@ public:
 	FGameplayTag InputTag_Jump;
 	FGameplayTag InputTag_Look;
 	FGameplayTag InputTag_Run;
+	FGameplayTag InputTag_LockOn;
+	FGameplayTag InputTag_EnableLockOn;
 
 	FGameplayTag Status_Idle;
 	FGameplayTag Status_Jump;

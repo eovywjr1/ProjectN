@@ -9,8 +9,8 @@
 #include "PNPawnComponent.h"
 #include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
-#include "GameFramework/Character.h"
 #include "Input/PNInputConfig.h"
+#include "Player/PNPlayerController.h"
 #include "Player/PNPlayerState.h"
 
 UPNPlayerComponent::UPNPlayerComponent(const FObjectInitializer& ObjectInitializer)
@@ -36,6 +36,8 @@ void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputCompo
 
 				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_LockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_LockOn);
+				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_EnableLockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_EnableLockOn);
 
 				PNEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityPressed, &ThisClass::Input_AbilityReleased);
 			}
@@ -84,7 +86,7 @@ void UPNPlayerComponent::BeginPlay()
 	APNPlayerState* PlayerState = Owner->GetPlayerState<APNPlayerState>();
 	UAbilitySystemComponent* ASComponent = PlayerState->GetAbilitySystemComponent();
 	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
-	
+
 #ifdef WITH_EDITOR
 	// 테스트 용도
 	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
@@ -113,22 +115,46 @@ void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 
 	Pawn->AddMovementInput(ForwardDirection, MovementVector.Y);
 	Pawn->AddMovementInput(RightDirection, MovementVector.X);
-	
+
 	LastMovementInput = MovementVector;
 }
 
 void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)
 {
-	APawn* Owner = GetPawn<APawn>();
-	if (Owner == nullptr)
+	APawn* Owner = GetPawnChecked<APawn>();
+	APNPlayerController* PlayerController = CastChecked<APNPlayerController>(Owner->GetController());
+	if (PlayerController->CanCameraInputControl() == false)
 	{
 		return;
 	}
 
 	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
-
 	Owner->AddControllerYawInput(LookAxisVector.X);
 	Owner->AddControllerPitchInput(LookAxisVector.Y);
+}
+
+void UPNPlayerComponent::Input_EnableLockOn(const FInputActionValue& InputActionValue)
+{
+	bIsEnableLockOn = !bIsEnableLockOn;
+
+	if (bIsEnableLockOn == false)
+	{
+		APawn* Owner = GetPawnChecked<APawn>();
+		APNPlayerController* PlayerController = CastChecked<APNPlayerController>(Owner->GetController());
+		PlayerController->DisableLockOn();
+	}
+}
+
+void UPNPlayerComponent::Input_LockOn(const FInputActionValue& InputActionValue)
+{
+	if (bIsEnableLockOn == false)
+	{
+		return;
+	}
+
+	APawn* Owner = GetPawnChecked<APawn>();
+	APNPlayerController* PlayerController = CastChecked<APNPlayerController>(Owner->GetController());
+	PlayerController->SetLockOnTargetActor();
 }
 
 void UPNPlayerComponent::Input_AbilityPressed(FGameplayTag InputTag)

@@ -32,6 +32,8 @@ public:
 private:
 	void Input_Move(const FInputActionValue& InputActionValue);
 	void Input_Look(const FInputActionValue& InputActionValue);
+	void Input_EnableLockOn(const FInputActionValue& InputActionValue);
+	void Input_LockOn(const FInputActionValue& InputActionValue);
 	
 	void Input_AbilityPressed(FGameplayTag InputTag);
 	void Input_AbilityReleased(FGameplayTag InputTag);
@@ -44,4 +46,6 @@ private:
 	TObjectPtr<class UInputMappingContext> CameraMappingContext;
 	
 	FVector2D LastMovementInput;
+	
+	bool bIsEnableLockOn = true;
 };

@@ -22,7 +22,6 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_Move, "InputTag.Move", "Move input.");
 	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input.");
 	AddTag(InputTag_Look, "InputTag.Look", "Look input.");
-	AddTag(InputTag_Run, "InputTag.Run", "Run input.");
 	AddTag(InputTag_LockOn, "InputTag.LockOn", "LockOn input.");
 	AddTag(InputTag_EnableLockOn, "InputTag.EnableLockOn", "EnableLockOn input.");
 

@@ -144,13 +144,13 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 	const float CosHalfFOV = FMath::Cos(FOVRadians * 0.5f);
 
 	TArray<FVector> BoxCenters;
-	FCriticalSection BoxCentersLock;
+	FCriticalSection BoxCenterCriticalSection;
 	BoxCenters.Reserve(TotalGridPoints);
 
 	FThreadSafeCounter TotalBoxCounter(0);
 
 	ParallelFor(TotalGridPoints,
-	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, BoxDepth, ComponentTransform, CameraLocation, CosHalfFOV, &BoxCenters, &BoxCentersLock, &TotalBoxCounter](int32 Index)
+	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, BoxDepth, ComponentTransform, CameraLocation, CosHalfFOV, &BoxCenters, &BoxCenterCriticalSection, &TotalBoxCounter](int32 Index)
 	            {
 		            const int32 HeightIndex = Index / (GridDivisionCount * GridDivisionCount);
 		            const int32 WidthIndex = (Index / GridDivisionCount) % GridDivisionCount;
@@ -182,7 +182,7 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 			            return;
 		            }
 
-		            FScopeLock Lock(&BoxCentersLock);
+		            FScopeLock Lock(&BoxCenterCriticalSection);
 		            BoxCenters.Add(BoxCenter);
 	            });
 

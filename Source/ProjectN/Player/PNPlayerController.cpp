@@ -6,6 +6,9 @@
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
+constexpr uint8 GridDivisionCount = 10;
+constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount * GridDivisionCount;
+
 APNPlayerController::APNPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
 	  LockOnTargetVisibleAreaRate(30)
@@ -48,11 +51,10 @@ void APNPlayerController::SetLockOnTargetActor()
 	TArray<AActor*> OverlappingActors;
 	TArray<AActor*> ActorsToIgnore;
 	const FVector OwnerLocation = OwnerPawn->GetActorLocation();
-	const UWorld* World = GetWorld();
-	UKismetSystemLibrary::SphereOverlapActors(World, OwnerLocation, SearchLockOnTargetRadius, TArray<TEnumAsByte<EObjectTypeQuery>>(), APawn::StaticClass(), ActorsToIgnore, OverlappingActors);
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, SearchLockOnTargetRadius, TArray<TEnumAsByte<EObjectTypeQuery>>(), APawn::StaticClass(), ActorsToIgnore, OverlappingActors);
 
 #ifdef ENABLE_DRAW_DEBUG
-	DrawDebugSphere(World, OwnerLocation, SearchLockOnTargetRadius, 32, FColor::Red, true, 1.0f);
+	DrawDebugSphere(GetWorld(), OwnerLocation, SearchLockOnTargetRadius, 32, FColor::Red, true, 1.0f);
 #endif
 
 	AActor* NearestTarget = nullptr;
@@ -81,7 +83,7 @@ void APNPlayerController::SetLockOnTargetActor()
 
 	LockOnTargetActor = NearestTarget;
 
-	if(LockOnTargetActor && CheckLockOnTimerHandle.IsValid() == false)
+	if (LockOnTargetActor && CheckLockOnTimerHandle.IsValid() == false)
 	{
 		GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);
 	}
@@ -111,7 +113,7 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 		return false;
 	}
 
-	// 일단 캡슐 컴포넌트만 가능, 추후 변경해도 됨
+	// 일단 캡슐 컴포넌트만 가능, 추후 변경 가능
 	UCapsuleComponent* CapsuleComponent = TargetActor->FindComponentByClass<UCapsuleComponent>();
 	if (CapsuleComponent == nullptr)
 	{
@@ -126,91 +128,90 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 	}
 
 	const FVector CameraLocation = PlayerCameraManager->GetCameraLocation();
-	const FTransform WorldTransform = CapsuleComponent->GetComponentTransform();
+	const FTransform ComponentTransform = CapsuleComponent->GetComponentTransform();
+
 	const float ScaledRadius = CapsuleComponent->GetScaledCapsuleRadius();
 	const float ScaledHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
-
-	constexpr uint8 GridDivisionCount = 10;
 
 	const float BoxHeight = ScaledHalfHeight * 2.0f / GridDivisionCount;
 	const float BoxWidth = (ScaledRadius * 2) / GridDivisionCount;
 	const float BoxDepth = (ScaledRadius * 2) / GridDivisionCount;
 
-	uint8 TotalBoxCount = 0;
-	uint8 VisibleBoxCount = 0;
-
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(OwnerPawn);
 
-	for (uint8 HeightIndex = 0; HeightIndex < GridDivisionCount; HeightIndex++)
+	const float FOVRadians = FMath::DegreesToRadians(PlayerCameraManager->GetFOVAngle());
+	const float CosHalfFOV = FMath::Cos(FOVRadians * 0.5f);
+
+	TArray<FVector> BoxCenters;
+	FCriticalSection BoxCentersLock;
+	BoxCenters.Reserve(TotalGridPoints);
+
+	FThreadSafeCounter TotalBoxCounter(0);
+
+	ParallelFor(TotalGridPoints,
+	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, BoxDepth, ComponentTransform, CameraLocation, CosHalfFOV, &BoxCenters, &BoxCentersLock, &TotalBoxCounter](int32 Index)
+	            {
+		            const int32 HeightIndex = Index / (GridDivisionCount * GridDivisionCount);
+		            const int32 WidthIndex = (Index / GridDivisionCount) % GridDivisionCount;
+		            const int32 DepthIndex = Index % GridDivisionCount;
+
+		            FVector BoxCenter = ComponentTransform.GetLocation();
+		            BoxCenter.X += (-ScaledRadius + (BoxWidth / 2) + (BoxWidth * WidthIndex));
+		            BoxCenter.Y += (-ScaledRadius + (BoxDepth / 2) + (BoxDepth * DepthIndex));
+		            BoxCenter.Z += (-ScaledHalfHeight + (BoxHeight / 2) + (BoxHeight * HeightIndex));
+
+		            const FVector LocalBoxCenter = ComponentTransform.InverseTransformPosition(BoxCenter);
+		            if (ScaledHalfHeight < FMath::Abs(LocalBoxCenter.Z) || ScaledRadius < FMath::Abs(LocalBoxCenter.X))
+		            {
+			            return;
+		            }
+
+		            const float RadialDistance = FMath::Sqrt(LocalBoxCenter.X * LocalBoxCenter.X + LocalBoxCenter.Y * LocalBoxCenter.Y);
+		            if (RadialDistance > ScaledRadius)
+		            {
+			            return;
+		            }
+
+		            TotalBoxCounter.Increment();
+
+		            const FVector DirectionCameraToBox = (BoxCenter - CameraLocation).GetSafeNormal();
+		            const float CosAngleCameraToBox = FVector::DotProduct(PlayerCameraManager->GetActorForwardVector(), DirectionCameraToBox);
+		            if (CosAngleCameraToBox < CosHalfFOV)
+		            {
+			            return;
+		            }
+
+		            FScopeLock Lock(&BoxCentersLock);
+		            BoxCenters.Add(BoxCenter);
+	            });
+
+	uint8 VisibleBoxCount = 0;
+
+	for (const FVector& BoxCenter : BoxCenters)
 	{
-		for (uint8 WidthIndex = 0; WidthIndex < GridDivisionCount; WidthIndex++)
+		FHitResult HitResult;
+		const FCollisionShape BoxShape = FCollisionShape::MakeBox(FVector(BoxWidth / 2, 1.0f, BoxHeight / 2));
+		const FQuat BoxRotation = ComponentTransform.GetRotation();
+		const bool bHit = GetWorld()->SweepSingleByChannel(HitResult, BoxCenter, CameraLocation, BoxRotation, ECC_Visibility, BoxShape, QueryParams);
+		if (bHit == false)
 		{
-			for (uint8 DepthIndex = 0; DepthIndex < GridDivisionCount; DepthIndex++)
-			{
-				FVector BoxCenter = WorldTransform.GetLocation();
-				BoxCenter.X += (-ScaledRadius + (BoxWidth / 2) + (BoxWidth * WidthIndex));
-				BoxCenter.Y += (-ScaledRadius + (BoxDepth / 2) + (BoxDepth * DepthIndex));
-				BoxCenter.Z += (-ScaledHalfHeight + (BoxHeight / 2) + (BoxHeight * HeightIndex));
-
-				const FVector LocalPoint = WorldTransform.InverseTransformPosition(BoxCenter);
-				if (ScaledHalfHeight < FMath::Abs(LocalPoint.Z) || ScaledRadius < FMath::Abs(LocalPoint.X))
-				{
-					continue;
-				}
-
-				const float RadialDistance = FMath::Sqrt(LocalPoint.X * LocalPoint.X + LocalPoint.Y * LocalPoint.Y);
-				if (RadialDistance > ScaledRadius)
-				{
-					continue;
-				}
-
-				++TotalBoxCount;
-
-				FVector2D ScreenPosition;
-				if (ProjectWorldLocationToScreen(BoxCenter, ScreenPosition) == false)
-				{
-					continue;
-				}
-
-				int32 ViewportSizeX, ViewportSizeY;
-				GetViewportSize(ViewportSizeX, ViewportSizeY);
-
-				const bool bIsOnScreen = ScreenPosition.X >= 0 && ScreenPosition.X <= ViewportSizeX && ScreenPosition.Y >= 0 && ScreenPosition.Y <= ViewportSizeY;
-				if (bIsOnScreen == false)
-				{
-					continue;
-				}
-
-				FHitResult HitResult;
-				const FCollisionShape BoxShape = FCollisionShape::MakeBox(FVector(BoxWidth / 2, 1.0f, BoxHeight / 2));
-				const FQuat BoxRotation = WorldTransform.GetRotation();
-				const bool bHit = GetWorld()->SweepSingleByChannel(HitResult, BoxCenter, CameraLocation, BoxRotation, ECC_Visibility, BoxShape, QueryParams);
-				if (bHit == false)
-				{
-					++VisibleBoxCount;
-				}
-
-				// #ifdef ENABLE_DRAW_DEBUG
-				// 					const FColor BoxColor = bHit == false ? FColor::Green : FColor::Red;
-				// 					DrawDebugBox(World, BoxCenter, FVector(BoxWidth / 2, 1.0f, BoxHeight / 2), BoxRotation, BoxColor, false, 5.0f);
-				// #endif
-			}
+			++VisibleBoxCount;
 		}
+
+// #ifdef ENABLE_DRAW_DEBUG
+// 		const FColor BoxColor = bHit == false ? FColor::Green : FColor::Red;
+// 		DrawDebugBox(GetWorld(), BoxCenter, FVector(BoxWidth / 2, 1.0f, BoxHeight / 2), BoxRotation, BoxColor, false, 5.0f);
+// #endif
 	}
 
-	if (LockOnTargetVisibleAreaRate > FPNPercent::FromFraction(VisibleBoxCount, TotalBoxCount))
-	{
-		return false;
-	}
-
-	return true;
+	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisibleBoxCount, TotalBoxCounter.GetValue());
 }
 
 void APNPlayerController::CheckLockOnTimerCallback()
 {
 	CheckLockOnTimerHandle.Invalidate();
-	
+
 	if (CanLockOnTargetActor(LockOnTargetActor))
 	{
 		GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);

@@ -40,6 +40,8 @@ public:
 	FGameplayTag Status_Peace;
 	FGameplayTag Status_Fight;
 	
+	FGameplayTag Ability_HitCheck;
+	
 private:
 	void AddAllTags(UGameplayTagsManager& Manager);
 	void AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment);

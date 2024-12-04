@@ -33,6 +33,8 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	
 	AddTag(Status_Peace, "Status.Peace", "Status Peace");
 	AddTag(Status_Fight, "Status.Fight", "Status Fight");
+	
+	AddTag(Ability_HitCheck, "Ability.HitCheck", "Ability HitCheck");
 }
 
 void FPNGameplayTags::AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment)

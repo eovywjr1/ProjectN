@@ -182,10 +182,8 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 			            return;
 		            }
 
-		            {
-			            FScopeLock Lock(&BoxCenterCriticalSection);
-			            BoxCenters.Add(BoxCenter);
-		            }
+		            FScopeLock Lock(&BoxCenterCriticalSection);
+		            BoxCenters.Add(BoxCenter);
 	            });
 
 	uint8 VisibleBoxCount = 0;
@@ -201,10 +199,10 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 			++VisibleBoxCount;
 		}
 
-		// #ifdef ENABLE_DRAW_DEBUG
-		// 		const FColor BoxColor = bHit == false ? FColor::Green : FColor::Red;
-		// 		DrawDebugBox(GetWorld(), BoxCenter, FVector(BoxWidth / 2, 1.0f, BoxHeight / 2), BoxRotation, BoxColor, false, 5.0f);
-		// #endif
+// #ifdef ENABLE_DRAW_DEBUG
+// 		const FColor BoxColor = bHit == false ? FColor::Green : FColor::Red;
+// 		DrawDebugBox(GetWorld(), BoxCenter, FVector(BoxWidth / 2, 1.0f, BoxHeight / 2), BoxRotation, BoxColor, false, 5.0f);
+// #endif
 	}
 
 	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisibleBoxCount, TotalBoxCounter.GetValue());

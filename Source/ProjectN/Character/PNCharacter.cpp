@@ -10,8 +10,10 @@
 #include "PNPawnComponent.h"
 #include "PNPawnData.h"
 #include "PNPlayerComponent.h"
+#include "PNStatusActorComponent.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 #include "Player/PNPlayerState.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,6 +45,7 @@ APNCharacter::APNCharacter()
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
 	PawnComponent = CreateDefaultSubobject<UPNPawnComponent>(TEXT("PNPawnComponent"));
+	CreateDefaultSubobject<UPNStatusActorComponent>(TEXT("StatusActorComponent"));
 }
 
 UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const
@@ -60,26 +63,14 @@ void APNCharacter::PossessedBy(AController* NewController)
 		UAbilitySystemComponent* ASComponent = PNPlayerState->GetAbilitySystemComponent();
 		PawnComponent->SetAbilitySystemComponent(CastChecked<UPNAbilitySystemComponent>(ASComponent));
 		ASComponent->InitAbilityActorInfo(PNPlayerState, this);
-		
-		for( const UPNAbilitySet* AbilitySet : PawnComponent->GetPawnData()->AbilitySets)
+
+		for (const UPNAbilitySet* AbilitySet : PawnComponent->GetPawnData()->AbilitySets)
 		{
-			if(AbilitySet == nullptr){
-				continue;
+			if (AbilitySet)
+			{
+				AbilitySet->GiveAbilityToAbilitySystem(ASComponent, this);
 			}
-			
-			AbilitySet->GiveAbilityToAbilitySystem(ASComponent, this);
 		}
-
-		// int32 InputID = 0;
-
-		// for (const TSubclassOf<UGameplayAbility>& Ability : Abilities)
-		// {
-		// 	FGameplayAbilitySpec AbilitySpec(Ability);
-		// 	AbilitySpec.InputID = InputID;
-		// 	++InputID;
-		//
-		// 	AbilitySystemComponent->GiveAbility(AbilitySpec);
-		// }
 	}
 }
 

@@ -22,5 +22,5 @@ public:
 	TObjectPtr<UPNInputConfig> InputConfig;
 	
 	UPROPERTY(EditDefaultsOnly)
-	TArray<TObjectPtr<UPNAbilitySet>> AbilitySets;
+	TArray<TObjectPtr<UPNAbilitySet>> AbilitySets;	
 };

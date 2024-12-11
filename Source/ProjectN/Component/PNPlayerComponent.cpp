@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Character/PNPlayerComponent.h"
+#include "PNPlayerComponent.h"
 
 #include "EnhancedInputSubsystems.h"
 #include "PNEnhancedInputComponent.h"

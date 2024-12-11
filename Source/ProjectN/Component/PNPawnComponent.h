@@ -21,7 +21,6 @@ class PROJECTN_API UPNPawnComponent : public UPawnComponent
 	
 private:
 	UPNPawnComponent(const FObjectInitializer& ObjectInitializer);
-	virtual void BeginPlay() override final;
 	
 public:
 	const UPNPawnData* GetPawnData() const { return PawnData; }

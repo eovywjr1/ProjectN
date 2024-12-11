@@ -6,7 +6,7 @@
 #include "PNGameplayTags.h"
 #include "PNLogChannels.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
-#include "Character/PNPlayerComponent.h"
+#include "Component/PNPlayerComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 

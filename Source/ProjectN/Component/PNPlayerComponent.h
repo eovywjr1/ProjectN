@@ -39,10 +39,10 @@ private:
 	void Input_AbilityReleased(FGameplayTag InputTag);
 	
 private:
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
 	
-	UPROPERTY(EditDefaultsOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(EditDefaultsOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> CameraMappingContext;
 	
 	FVector2D LastMovementInput;

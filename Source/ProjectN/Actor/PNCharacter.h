@@ -14,16 +14,13 @@ class APNCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
-public:
-	APNCharacter();
+protected:
+	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
+public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
 	
-	virtual void PossessedBy(AController* NewController) override final;
-
 protected:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
-
-private:
+	UPROPERTY(EditAnywhere)
 	TObjectPtr<UPNPawnComponent> PawnComponent;
 };

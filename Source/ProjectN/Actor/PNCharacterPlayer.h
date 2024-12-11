@@ -1,0 +1,27 @@
+// Fill out your copyright notice in the Description page of Project Settings.
+
+#pragma once
+
+#include "CoreMinimal.h"
+#include "PNCharacter.h"
+#include "PNCharacterPlayer.generated.h"
+
+class UPNPlayerComponent;
+
+/**
+ * 
+ */
+UCLASS()
+class PROJECTN_API APNCharacterPlayer : public APNCharacter
+{
+	GENERATED_BODY()
+
+private:
+	APNCharacterPlayer(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	virtual void PossessedBy(AController* NewController) override final;
+	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override final;
+
+private:
+	UPROPERTY(EditAnywhere)
+	TObjectPtr<UPNPlayerComponent> PlayerComponent;
+};

@@ -5,7 +5,7 @@
 
 #include "AbilitySystemComponent.h"
 #include "PNGameplayTags.h"
-#include "Character/PNCharacter.h"
+#include "Actor/PNCharacter.h"
 
 void UPNAnimNotifyState_Idle::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {

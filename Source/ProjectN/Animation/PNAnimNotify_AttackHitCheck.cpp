@@ -21,7 +21,8 @@ void UPNAnimNotify_AttackHitCheck::Notify(USkeletalMeshComponent* MeshComp, UAni
 		if (AActor* Owner = MeshComp->GetOwner())
 		{
 			FGameplayEventData PayloadData;
-			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, FPNGameplayTags::Get().Ability_HitCheck, PayloadData);
+			PayloadData.EventTag = FPNGameplayTags::Get().GameplayEvent_AttackHitCheck;
+			UAbilitySystemBlueprintLibrary::SendGameplayEventToActor(Owner, PayloadData.EventTag, PayloadData);
 		}
 	}
 }

@@ -57,9 +57,9 @@ void APNCharacter::PossessedBy(AController* NewController)
 {
 	Super::PossessedBy(NewController);
 
+	// Todo. 캐릭터 스폰할 때 PawnData, AbilitySystemComponent 초기화해줘야 함
 	if (APNPlayerState* PNPlayerState = GetPlayerState<APNPlayerState>())
 	{
-		// Todo. 캐릭터 스폰할 때 PawnData, AbilitySystemComponent 초기화해줘야 함
 		UAbilitySystemComponent* ASComponent = PNPlayerState->GetAbilitySystemComponent();
 		PawnComponent->SetAbilitySystemComponent(CastChecked<UPNAbilitySystemComponent>(ASComponent));
 		ASComponent->InitAbilityActorInfo(PNPlayerState, this);
@@ -71,6 +71,13 @@ void APNCharacter::PossessedBy(AController* NewController)
 				AbilitySet->GiveAbilityToAbilitySystem(ASComponent, this);
 			}
 		}
+	}
+	
+	// Todo. 임시 테스트 용도, 추후 NPC가 어빌리티가 필요없으면 제거 
+	else
+	{
+		PawnComponent->SetAbilitySystemComponent(NewObject<UPNAbilitySystemComponent>(PawnComponent));
+		PawnComponent->GetAbilitySystemComponent()->RegisterComponent();
 	}
 }
 

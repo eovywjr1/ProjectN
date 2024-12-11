@@ -6,7 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "PNStatusActorComponent.generated.h"
 
-class UPNWeaponAttributeSet;
+class UPNPawnAttributeSet;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PROJECTN_API UPNStatusActorComponent : public UActorComponent

@@ -48,7 +48,11 @@ void UPNAbilityTask_TraceToPawn::TickTask(float DeltaTime)
 	ElapsedTime += DeltaTime;
 	if (HitBoxData.HitBoxDurationTime < ElapsedTime)
 	{
-		OnComplete.Broadcast(FoundActors);
+		FGameplayAbilityTargetData_ActorArray* ActorArrayTargetData = new FGameplayAbilityTargetData_ActorArray();
+		ActorArrayTargetData->SetActors(HitActors.Array());
+		FGameplayAbilityTargetDataHandle TargetDataHandle;
+		TargetDataHandle.Add(ActorArrayTargetData);
+		OnComplete.Broadcast(TargetDataHandle);
 
 		bTickingTask = false;
 		EndTask();
@@ -67,16 +71,10 @@ UPNAbilityTask_TraceToPawn* UPNAbilityTask_TraceToPawn::CreateTask(UGameplayAbil
 
 void UPNAbilityTask_TraceToPawn::OnTargetDataReadyCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
-	if (TargetDataHandle.Data.IsEmpty())
+	if (TargetDataHandle.IsValid(0) == false)
 	{
 		return;
 	}
-
-	if (FGameplayAbilityTargetData_ActorArray* ActorArrayTargetData = static_cast<FGameplayAbilityTargetData_ActorArray*>(TargetDataHandle.Data[0].Get()))
-	{
-		for (const TWeakObjectPtr<AActor>& FoundActor : ActorArrayTargetData->GetActors())
-		{
-			FoundActors.AddUnique(FoundActor.Get());
-		}
-	}
+	
+	HitActors.Append(TargetDataHandle.Get(0)->GetActors());
 }

@@ -7,9 +7,7 @@
 
 FGameplayAbilityTargetDataHandle APNTargetActor_HitCheckActor_MultiSweep::MakeTargetData() const
 {
-	FGameplayAbilityTargetDataHandle TargetDataHandle;
-	FGameplayAbilityTargetData_ActorArray* ActorArrayTargetData = new FGameplayAbilityTargetData_ActorArray();
-	TargetDataHandle.Add(ActorArrayTargetData);
+	TArray<TWeakObjectPtr<AActor>> HitActors;
 
 	switch (AttackHitBoxData.Shape)
 	{
@@ -19,16 +17,21 @@ FGameplayAbilityTargetDataHandle APNTargetActor_HitCheckActor_MultiSweep::MakeTa
 		}
 	case EHitBoxShape::Box:
 		{
-			GetHitBoxResult(TargetDataHandle);
+			GetHitBoxActors(HitActors);
 
 			break;
 		}
 	}
 
+	FGameplayAbilityTargetData_ActorArray* ActorArrayTargetData = new FGameplayAbilityTargetData_ActorArray();
+	ActorArrayTargetData->SetActors(HitActors);
+	FGameplayAbilityTargetDataHandle TargetDataHandle;
+	TargetDataHandle.Add(ActorArrayTargetData);
+
 	return TargetDataHandle;
 }
 
-void APNTargetActor_HitCheckActor_MultiSweep::GetHitBoxResult(FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const
+void APNTargetActor_HitCheckActor_MultiSweep::GetHitBoxActors(TArray<TWeakObjectPtr<AActor>>& OutHitActors) const
 {
 	TArray<FHitResult> HitResults;
 	FCollisionQueryParams QueryParams;
@@ -49,10 +52,8 @@ void APNTargetActor_HitCheckActor_MultiSweep::GetHitBoxResult(FGameplayAbilityTa
 		return Cast<APawn>(Hit.GetActor()) == nullptr;
 	});
 
-	FGameplayAbilityTargetData_ActorArray* ActorArrayTargetData = static_cast<FGameplayAbilityTargetData_ActorArray*>(OutTargetDataHandle.Data[0].Get());
-
 	for (const FHitResult& Hit : HitResults)
 	{
-		ActorArrayTargetData->TargetActorArray.AddUnique(Hit.GetActor());
+		OutHitActors.Add(Hit.GetActor());
 	}
 }

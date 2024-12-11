@@ -5,24 +5,28 @@
 
 #include "AbilitySystemComponent.h"
 #include "PNCharacter.h"
+#include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 
 void UPNStatusActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Todo. 임시로 생성자에서 설정, 추후 무기 장착/획득할 때 넣어야 함
-	if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
+	if (APNCharacter* Owner = GetOwner<APNCharacter>())
 	{
-		if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
+		if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
 		{
-			if (APNCharacter* Owner = GetOwner<APNCharacter>())
+			// Todo. 임시로 생성자에서 설정, 추후 무기 장착/획득할 때 넣어야 함
+			if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
 			{
-				if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
+				if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
 				{
 					AbilitySystemComponent->AddSpawnedAttribute(WeaponAttributeSet);
 				}
 			}
+			
+			// Todo. 데이터테이블과 연동해야 함	
+			AbilitySystemComponent->InitStats(UPNPawnAttributeSet::StaticClass(), nullptr);
 		}
 	}
 }

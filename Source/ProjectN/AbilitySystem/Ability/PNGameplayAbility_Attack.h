@@ -6,6 +6,8 @@
 #include "Abilities/GameplayAbility.h"
 #include "PNGameplayAbility_Attack.generated.h"
 
+class APNTargetActor_HitCheckActor;
+
 /**
  * 
  */
@@ -28,7 +30,23 @@ protected:
 	UFUNCTION()
 	void OnInterruptedCallback();
 	
+private:
+	UFUNCTION()
+	void OnGameplayEvent(FGameplayEventData Payload);
+	
+	void AttackHitCheck();
+	
+	UFUNCTION()
+	void OnAttackHitTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle);
+	
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Attack)
 	TObjectPtr<UAnimMontage> AttackActionMontage = nullptr;
+	
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<APNTargetActor_HitCheckActor> TargetActorHitCheckClass = nullptr;
+	
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<UGameplayEffect> AttackDamageEffectClass = nullptr;
 };

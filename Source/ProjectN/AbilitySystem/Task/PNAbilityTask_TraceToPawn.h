@@ -10,7 +10,7 @@
 
 class APNTargetActor_HitCheckActor_MultiSweep;
 
-DECLARE_MULTICAST_DELEGATE_OneParam(FTraceResultDelegate, const TArray<TWeakObjectPtr<AActor>>&);
+DECLARE_MULTICAST_DELEGATE_OneParam(FTraceResultDelegate, const FGameplayAbilityTargetDataHandle&);
 
 /**
  * 
@@ -41,6 +41,6 @@ private:
 	TObjectPtr<APNTargetActor_HitCheckActor> SpawnedTargetActor;
 	
 	FHitBoxData HitBoxData;
-	TArray<TWeakObjectPtr<AActor>> FoundActors;
+	TSet<TWeakObjectPtr<AActor>> HitActors;
 	float ElapsedTime = 0.0f;
 };

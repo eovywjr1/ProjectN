@@ -19,9 +19,11 @@ class PROJECTN_API UPNPawnComponent : public UPawnComponent
 {
 	GENERATED_BODY()
 	
-public:
+private:
 	UPNPawnComponent(const FObjectInitializer& ObjectInitializer);
+	virtual void BeginPlay() override final;
 	
+public:
 	const UPNPawnData* GetPawnData() const { return PawnData; }
 	UPNAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
 	void SetAbilitySystemComponent(UPNAbilitySystemComponent* InAbilitySystemComponent) { AbilitySystemComponent = InAbilitySystemComponent; }

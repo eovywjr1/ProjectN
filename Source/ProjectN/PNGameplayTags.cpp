@@ -26,7 +26,9 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(InputTag_EnableLockOn, "InputTag.EnableLockOn", "EnableLockOn input.");
 
 	AddTag(Status_Idle, "Status.Idle", "Status Idle");
-	AddTag(Status_Jump, "Status.Junp", "Status Jump");
+	AddTag(Status_Dead, "Status.Dead", "Status Dead");
+	
+	AddTag(Status_Jump, "Status.Jump", "Status Jump");
 	AddTag(Status_Run, "Status.Run", "Status Run");
 	AddTag(Status_Roll, "Status.Roll", "Status Roll");
 	AddTag(Status_Guard, "Status.Guard", "Status Guard");
@@ -34,7 +36,7 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Status_Peace, "Status.Peace", "Status Peace");
 	AddTag(Status_Fight, "Status.Fight", "Status Fight");
 	
-	AddTag(Ability_HitCheck, "Ability.HitCheck", "Ability HitCheck");
+	AddTag(GameplayEvent_AttackHitCheck, "GameplayEvent.AttackHitCheck", "GameplayEvent AttackHitCheck");
 }
 
 void FPNGameplayTags::AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment)

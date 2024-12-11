@@ -17,5 +17,5 @@ class PROJECTN_API APNTargetActor_HitCheckActor_MultiSweep : public APNTargetAct
 private:
 	virtual FGameplayAbilityTargetDataHandle MakeTargetData() const override final;
 
-	void GetHitBoxResult(FGameplayAbilityTargetDataHandle& OutTargetDataHandle) const;
+	void GetHitBoxActors(TArray<TWeakObjectPtr<AActor>>& OutHitActors) const;
 };

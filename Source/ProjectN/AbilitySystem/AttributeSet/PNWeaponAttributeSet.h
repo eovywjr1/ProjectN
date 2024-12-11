@@ -17,9 +17,16 @@ class PROJECTN_API UPNWeaponAttributeSet : public UPNAttributeSet
 	GENERATED_BODY()
 	
 public:
+	UPNWeaponAttributeSet();
+	
+	ATTRIBUTE_ACCESSORS(UPNWeaponAttributeSet, WeaponDamage);
+	
 	bool GetAttackHitBoxData(FGameplayTag AbilityTag, FHitBoxData& OutAttackHitBoxData) const;
 
 private:
-	UPROPERTY(EditDefaultsOnly, meta=(AllowPrivateAccess=true))
+	UPROPERTY(EditDefaultsOnly)
 	TMap<FGameplayTag, FHitBoxData> AttackHitBoxes;
+	
+	UPROPERTY()
+	FGameplayAttributeData WeaponDamage;
 };

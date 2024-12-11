@@ -32,6 +32,8 @@ public:
 	FGameplayTag InputTag_EnableLockOn;
 
 	FGameplayTag Status_Idle;
+	FGameplayTag Status_Dead;
+	
 	FGameplayTag Status_Jump;
 	FGameplayTag Status_Run;
 	FGameplayTag Status_Roll;
@@ -40,7 +42,7 @@ public:
 	FGameplayTag Status_Peace;
 	FGameplayTag Status_Fight;
 	
-	FGameplayTag Ability_HitCheck;
+	FGameplayTag GameplayEvent_AttackHitCheck;
 	
 private:
 	void AddAllTags(UGameplayTagsManager& Manager);

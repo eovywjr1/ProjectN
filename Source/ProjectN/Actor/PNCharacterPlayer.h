@@ -20,6 +20,9 @@ private:
 	APNCharacterPlayer(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	virtual void PossessedBy(AController* NewController) override final;
 	virtual void SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override final;
+	
+public:
+	void MoveByInput(const FVector2D MovementVector);
 
 private:
 	UPROPERTY(EditAnywhere)

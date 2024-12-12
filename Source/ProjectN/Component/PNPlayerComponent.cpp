@@ -10,7 +10,7 @@
 #include "PNPawnComponent.h"
 #include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
-#include "Actor/PNCharacter.h"
+#include "Actor/PNCharacterPlayer.h"
 #include "GameFramework/PawnMovementComponent.h"
 #include "Input/PNInputConfig.h"
 #include "Player/PNPlayerController.h"
@@ -116,33 +116,16 @@ void UPNPlayerComponent::DestroyComponent(bool bPromoteChildren)
 
 void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 {
-	APNCharacter* Owner = GetPawn<APNCharacter>();
-	if (Owner == nullptr)
-	{
-		return;
-	}
-
-	AController* Controller = Owner->GetController();
-	if (Controller == nullptr)
-	{
-		return;
-	}
-
+	APNCharacterPlayer* Owner = GetPawnChecked<APNCharacterPlayer>();
+	
 	if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
 	{
 		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 1);
 	}
-
-	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
-	const FRotator Rotation = Controller->GetControlRotation();
-	const FRotator YawRotation(0, Rotation.Yaw, 0);
-	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
-
-	Owner->AddMovementInput(ForwardDirection, MovementVector.Y);
-	Owner->AddMovementInput(RightDirection, MovementVector.X);
-
-	LastMovementInput = MovementVector;
+	
+	Owner->MoveByInput(InputActionValue.Get<FVector2D>());
+	
+	LastMovementInput = InputActionValue.Get<FVector2D>();
 }
 
 void UPNPlayerComponent::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
@@ -169,14 +152,7 @@ void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)
 {
 	APawn* Owner = GetPawnChecked<APawn>();
 	APNPlayerController* PlayerController = CastChecked<APNPlayerController>(Owner->GetController());
-	if (PlayerController->CanCameraInputControl() == false)
-	{
-		return;
-	}
-
-	const FVector2D LookAxisVector = InputActionValue.Get<FVector2D>();
-	Owner->AddControllerYawInput(LookAxisVector.X);
-	Owner->AddControllerPitchInput(LookAxisVector.Y);
+	PlayerController->RotationByInput(InputActionValue.Get<FVector2D>());
 }
 
 void UPNPlayerComponent::Input_EnableLockOn(const FInputActionValue& InputActionValue)

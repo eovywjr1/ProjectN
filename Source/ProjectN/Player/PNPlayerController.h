@@ -22,6 +22,9 @@ private:
 
 public:
 	bool CanCameraInputControl() const;
+	
+	void RotationByInput(const FVector2D LookAxisVector);
+	
 	void SetLockOnTargetActor();
 	FORCEINLINE void DisableLockOn() { LockOnTargetActor = nullptr; }
 

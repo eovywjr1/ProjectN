@@ -40,6 +40,17 @@ bool APNPlayerController::CanCameraInputControl() const
 	return true;
 }
 
+void APNPlayerController::RotationByInput(const FVector2D LookAxisVector) 
+{
+	if (CanCameraInputControl() == false)
+	{
+		return;
+	}
+
+	AddYawInput(LookAxisVector.X);
+	AddPitchInput(LookAxisVector.Y);
+}
+
 void APNPlayerController::SetLockOnTargetActor()
 {
 	APawn* OwnerPawn = GetPawn();

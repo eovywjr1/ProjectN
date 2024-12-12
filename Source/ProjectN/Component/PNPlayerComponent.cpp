@@ -4,11 +4,14 @@
 #include "PNPlayerComponent.h"
 
 #include "EnhancedInputSubsystems.h"
+#include "GameplayTagsManager.h"
 #include "PNEnhancedInputComponent.h"
 #include "PNGameplayTags.h"
 #include "PNPawnComponent.h"
 #include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "Actor/PNCharacter.h"
+#include "GameFramework/PawnMovementComponent.h"
 #include "Input/PNInputConfig.h"
 #include "Player/PNPlayerController.h"
 #include "Player/PNPlayerState.h"
@@ -75,7 +78,7 @@ void UPNPlayerComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	APawn* Owner = GetPawn<APawn>();
+	ACharacter* Owner = GetPawn<ACharacter>();
 	if (Owner == nullptr)
 	{
 		return;
@@ -83,28 +86,51 @@ void UPNPlayerComponent::BeginPlay()
 
 	EnableInput(true);
 
-	APNPlayerState* PlayerState = Owner->GetPlayerState<APNPlayerState>();
-	UAbilitySystemComponent* ASComponent = PlayerState->GetAbilitySystemComponent();
-	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
+	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetPlayerState<APNPlayerState>()->GetAbilitySystemComponent();
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Idle);
+
+	FGameplayTagContainer ActionTagContainer = UGameplayTagsManager::Get().RequestGameplayTagChildren(FPNGameplayTags::Get().Action);
+	OnActionTagDelegateHandle = AbilitySystemComponent->RegisterGenericGameplayTagEvent().AddUObject(this, &ThisClass::OnUpdateActionTag);
+
+	Owner->OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
 
 #ifdef WITH_EDITOR
 	// 테스트 용도
-	ASComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
 #endif
+}
+
+void UPNPlayerComponent::DestroyComponent(bool bPromoteChildren)
+{
+	if (APNCharacter* Owner = GetPawn<APNCharacter>())
+	{
+		if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
+		{
+			AbilitySystemComponent->RegisterGenericGameplayTagEvent().Remove(OnActionTagDelegateHandle);
+		}
+	}
+
+	Super::DestroyComponent(bPromoteChildren);
 }
 
 void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 {
-	APawn* Pawn = GetPawn<APawn>();
-	if (Pawn == nullptr)
+	APNCharacter* Owner = GetPawn<APNCharacter>();
+	if (Owner == nullptr)
 	{
 		return;
 	}
 
-	AController* Controller = Pawn->GetController();
+	AController* Controller = Owner->GetController();
 	if (Controller == nullptr)
 	{
 		return;
+	}
+
+	if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 1);
 	}
 
 	const FVector2D MovementVector = InputActionValue.Get<FVector2D>();
@@ -113,10 +139,30 @@ void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
 	const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 
-	Pawn->AddMovementInput(ForwardDirection, MovementVector.Y);
-	Pawn->AddMovementInput(RightDirection, MovementVector.X);
+	Owner->AddMovementInput(ForwardDirection, MovementVector.Y);
+	Owner->AddMovementInput(RightDirection, MovementVector.X);
 
 	LastMovementInput = MovementVector;
+}
+
+void UPNPlayerComponent::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
+{
+	APNCharacter* Owner = GetPawn<APNCharacter>();
+	if (Owner == nullptr)
+	{
+		return;
+	}
+
+	if (UPawnMovementComponent* MovementComponent = Owner->GetMovementComponent())
+	{
+		if (MovementComponent->Velocity.IsNearlyZero())
+		{
+			if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
+			{
+				AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 0);
+			}
+		}
+	}
 }
 
 void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)
@@ -201,4 +247,30 @@ void UPNPlayerComponent::Input_AbilityReleased(FGameplayTag InputTag)
 	}
 
 	ASC->AbilityInputReleased(InputTag);
+}
+
+void UPNPlayerComponent::OnUpdateActionTag(const FGameplayTag GameplayTag, int32 Count) const
+{
+	if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action) == false)
+	{
+		return;
+	}
+
+	APNCharacter* Owner = GetPawn<APNCharacter>();
+	if (Owner == nullptr)
+	{
+		return;
+	}
+
+	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
+	check(AbilitySystemComponent);
+
+	if (Count > 0)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Status_Idle, 0);
+	}
+	else if (Owner->IsIdle())
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Status_Idle, 1);
+	}
 }

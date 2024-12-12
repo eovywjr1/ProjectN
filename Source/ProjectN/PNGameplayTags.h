@@ -33,14 +33,16 @@ public:
 
 	FGameplayTag Status_Idle;
 	FGameplayTag Status_Dead;
-	
-	FGameplayTag Status_Jump;
-	FGameplayTag Status_Run;
-	FGameplayTag Status_Roll;
-	FGameplayTag Status_Guard;
-	
 	FGameplayTag Status_Peace;
 	FGameplayTag Status_Fight;
+	
+	FGameplayTag Action;
+	FGameplayTag Action_Jump;
+	FGameplayTag Action_Move;
+	FGameplayTag Action_Run;
+	FGameplayTag Action_Roll;
+	FGameplayTag Action_Guard;
+	FGameplayTag Action_Attack;
 	
 	FGameplayTag GameplayEvent_AttackHitCheck;
 	

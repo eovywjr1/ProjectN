@@ -12,7 +12,7 @@ UPNGameplayAbility_Run::UPNGameplayAbility_Run()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	ActivationOwnedTags.AddTag(FPNGameplayTags::Get().Status_Run);
+	ActivationOwnedTags.AddTag(FPNGameplayTags::Get().Action_Run);
 }
 
 void UPNGameplayAbility_Run::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

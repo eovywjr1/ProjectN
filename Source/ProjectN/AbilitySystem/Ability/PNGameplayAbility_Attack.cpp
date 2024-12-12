@@ -17,8 +17,9 @@ UPNGameplayAbility_Attack::UPNGameplayAbility_Attack()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	ActivationOwnedTags.AddTag(FPNGameplayTags::FindTagByString("Status.Attack"));
-	ActivationBlockedTags.AddTag(FPNGameplayTags::FindTagByString("Status.Attack"));
+	const FGameplayTag AttackTag = FPNGameplayTags::Get().Action_Attack;
+	ActivationOwnedTags.AddTag(AttackTag);
+	ActivationBlockedTags.AddTag(AttackTag);
 }
 
 void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)
@@ -80,7 +81,7 @@ void UPNGameplayAbility_Attack::AttackHitCheck()
 		FGameplayTag AttackTag;
 		for (const FGameplayTag& GameplayTag : TagContainer)
 		{
-			if (GameplayTag.MatchesTag(FGameplayTag::RequestGameplayTag("Status.Attack")))
+			if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action_Attack))
 			{
 				AttackTag = GameplayTag;
 				break;

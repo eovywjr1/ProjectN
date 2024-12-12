@@ -42,7 +42,7 @@ void UPNGameplayAbilityTask_JumpAndWaitForLanding::OnLandedCallback(const FHitRe
 UPNGameplayAbility_Jump::UPNGameplayAbility_Jump()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
-	ActivationOwnedTags.AddTag(FPNGameplayTags::Get().Status_Jump);
+	ActivationOwnedTags.AddTag(FPNGameplayTags::Get().Action_Jump);
 }
 
 void UPNGameplayAbility_Jump::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

@@ -20,6 +20,8 @@ protected:
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
 	
+	bool IsIdle() const;
+	
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UPNPawnComponent> PawnComponent;

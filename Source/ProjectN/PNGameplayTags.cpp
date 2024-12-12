@@ -27,14 +27,16 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 
 	AddTag(Status_Idle, "Status.Idle", "Status Idle");
 	AddTag(Status_Dead, "Status.Dead", "Status Dead");
-	
-	AddTag(Status_Jump, "Status.Jump", "Status Jump");
-	AddTag(Status_Run, "Status.Run", "Status Run");
-	AddTag(Status_Roll, "Status.Roll", "Status Roll");
-	AddTag(Status_Guard, "Status.Guard", "Status Guard");
-	
 	AddTag(Status_Peace, "Status.Peace", "Status Peace");
 	AddTag(Status_Fight, "Status.Fight", "Status Fight");
+	
+	AddTag(Action, "Action", "Action");
+	AddTag(Action_Jump, "Action.Jump", "Action Jump");
+	AddTag(Action_Move, "Action.Move", "Action Move");
+	AddTag(Action_Run, "Action.Run", "Action Run");
+	AddTag(Action_Roll, "Action.Roll", "Action Roll");
+	AddTag(Action_Guard, "Action.Guard", "Action Guard");
+	AddTag(Action_Attack, "Action.Attack", "Action Attack");
 	
 	AddTag(GameplayEvent_AttackHitCheck, "GameplayEvent.AttackHitCheck", "GameplayEvent AttackHitCheck");
 }

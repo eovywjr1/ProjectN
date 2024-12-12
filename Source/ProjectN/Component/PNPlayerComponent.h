@@ -19,14 +19,15 @@ class PROJECTN_API UPNPlayerComponent : public UPawnComponent
 {
 	GENERATED_BODY()
 
-public:
+private:
 	UPNPlayerComponent(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override final;
+	virtual void DestroyComponent(bool bPromoteChildren) override final;
 	
+public:
 	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
 	void EnableInput(bool bIsEnable) const;
-	
 	FVector2D GetLastMovementInput() const { return LastMovementInput; }
 
 private:
@@ -38,6 +39,11 @@ private:
 	void Input_AbilityPressed(FGameplayTag InputTag);
 	void Input_AbilityReleased(FGameplayTag InputTag);
 	
+	void OnUpdateActionTag(const FGameplayTag GameplayTag, int32 Count) const;
+	
+	UFUNCTION()
+	void OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity);
+	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
 	TObjectPtr<class UInputMappingContext> DefaultMappingContext;
@@ -48,4 +54,6 @@ private:
 	FVector2D LastMovementInput;
 	
 	bool bIsEnableLockOn = true;
+	
+	FDelegateHandle OnActionTagDelegateHandle;
 };

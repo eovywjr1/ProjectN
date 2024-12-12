@@ -64,7 +64,7 @@ UPNGameplayAbility_Roll::UPNGameplayAbility_Roll()
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
 
-	ActivationOwnedTags.AddTag(FPNGameplayTags::FindTagByString("Status.Roll"));
+	ActivationOwnedTags.AddTag(FPNGameplayTags::Get().Action_Roll);
 }
 
 void UPNGameplayAbility_Roll::ActivateAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, const FGameplayEventData* TriggerEventData)

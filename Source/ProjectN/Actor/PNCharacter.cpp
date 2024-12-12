@@ -45,3 +45,21 @@ UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const
 {
 	return PawnComponent->GetAbilitySystemComponent();
 }
+
+bool APNCharacter::IsIdle() const
+{
+	UCharacterMovementComponent* CharacterMovementComponent = GetCharacterMovement();
+	check(CharacterMovementComponent);
+
+	if (const bool bIsMoving = CharacterMovementComponent->Velocity.IsNearlyZero() == false)
+	{
+		return false;
+	}
+
+	if (CharacterMovementComponent->IsFalling())
+	{
+		return false;
+	}
+
+	return true;
+}

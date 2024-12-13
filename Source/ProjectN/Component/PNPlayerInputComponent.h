@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Components/PawnComponent.h"
 
-#include "PNPlayerComponent.generated.h"
+#include "PNPlayerInputComponent.generated.h"
 
 /**
  * 
@@ -15,12 +15,12 @@ struct FGameplayTag;
 struct FInputActionValue;
 
 UCLASS(Blueprintable, Meta=(BlueprintSpawnableComponent))
-class PROJECTN_API UPNPlayerComponent : public UPawnComponent
+class PROJECTN_API UPNPlayerInputComponent : public UPawnComponent
 {
 	GENERATED_BODY()
 
 private:
-	UPNPlayerComponent(const FObjectInitializer& ObjectInitializer);
+	UPNPlayerInputComponent(const FObjectInitializer& ObjectInitializer);
 
 	virtual void BeginPlay() override final;
 	virtual void DestroyComponent(bool bPromoteChildren) override final;

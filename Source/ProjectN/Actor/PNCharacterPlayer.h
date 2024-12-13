@@ -6,7 +6,7 @@
 #include "PNCharacter.h"
 #include "PNCharacterPlayer.generated.h"
 
-class UPNPlayerComponent;
+class UPNPlayerInputComponent;
 
 /**
  * 
@@ -23,8 +23,8 @@ private:
 	
 public:
 	void MoveByInput(const FVector2D MovementVector);
-
+	
 private:
-	UPROPERTY(EditAnywhere)
-	TObjectPtr<UPNPlayerComponent> PlayerComponent;
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UPNPlayerInputComponent> PNPlayerInputComponent;
 };

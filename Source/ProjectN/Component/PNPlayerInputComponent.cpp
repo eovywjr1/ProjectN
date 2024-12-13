@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "PNPlayerComponent.h"
+#include "PNPlayerInputComponent.h"
 
 #include "EnhancedInputSubsystems.h"
 #include "GameplayTagsManager.h"
@@ -16,39 +16,35 @@
 #include "Player/PNPlayerController.h"
 #include "Player/PNPlayerState.h"
 
-UPNPlayerComponent::UPNPlayerComponent(const FObjectInitializer& ObjectInitializer)
+UPNPlayerInputComponent::UPNPlayerInputComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {}
 
-void UPNPlayerComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
+void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
-	check(PlayerInputComponent);
+	const APawn* Owner = GetPawn<APawn>();
+	check(Owner);
 
-	const APawn* Pawn = GetPawn<APawn>();
-	check(Pawn);
+	const UPNPawnComponent* PawnComponent = Owner->FindComponentByClass<UPNPawnComponent>();
+	check(PawnComponent);
+	const UPNPawnData* PawnData = PawnComponent->GetPawnData();
+	check(PawnData);
+	const UPNInputConfig* InputConfig = PawnData->InputConfig;
+	check(InputConfig);
 
-	if (const UPNPawnComponent* PawnComponent = Pawn->FindComponentByClass<UPNPawnComponent>())
-	{
-		if (const UPNPawnData* PawnData = PawnComponent->GetPawnData())
-		{
-			if (const UPNInputConfig* InputConfig = PawnData->InputConfig)
-			{
-				const FPNGameplayTags& GameplayTags = FPNGameplayTags::Get();
+	const FPNGameplayTags& GameplayTags = FPNGameplayTags::Get();
+	UPNEnhancedInputComponent* PNEnhancedInputComponent = Cast<UPNEnhancedInputComponent>(PlayerInputComponent);
+	check(PNEnhancedInputComponent);
 
-				UPNEnhancedInputComponent* PNEnhancedInputComponent = CastChecked<UPNEnhancedInputComponent>(PlayerInputComponent);
+	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
+	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
+	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_LockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_LockOn);
+	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_EnableLockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_EnableLockOn);
 
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_LockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_LockOn);
-				PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_EnableLockOn, ETriggerEvent::Triggered, this, &ThisClass::Input_EnableLockOn);
-
-				PNEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityPressed, &ThisClass::Input_AbilityReleased);
-			}
-		}
-	}
+	PNEnhancedInputComponent->BindAbilityActions(InputConfig, this, &ThisClass::Input_AbilityPressed, &ThisClass::Input_AbilityReleased);
 }
 
-void UPNPlayerComponent::EnableInput(bool bIsEnable) const
+void UPNPlayerInputComponent::EnableInput(bool bIsEnable) const
 {
 	APawn* Owner = GetPawnChecked<APawn>();
 	APlayerController* PlayerController = Cast<APlayerController>(Owner->GetController());
@@ -74,7 +70,7 @@ void UPNPlayerComponent::EnableInput(bool bIsEnable) const
 	}
 }
 
-void UPNPlayerComponent::BeginPlay()
+void UPNPlayerInputComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
@@ -101,7 +97,7 @@ void UPNPlayerComponent::BeginPlay()
 #endif
 }
 
-void UPNPlayerComponent::DestroyComponent(bool bPromoteChildren)
+void UPNPlayerInputComponent::DestroyComponent(bool bPromoteChildren)
 {
 	if (APNCharacter* Owner = GetPawn<APNCharacter>())
 	{
@@ -114,21 +110,21 @@ void UPNPlayerComponent::DestroyComponent(bool bPromoteChildren)
 	Super::DestroyComponent(bPromoteChildren);
 }
 
-void UPNPlayerComponent::Input_Move(const FInputActionValue& InputActionValue)
+void UPNPlayerInputComponent::Input_Move(const FInputActionValue& InputActionValue)
 {
 	APNCharacterPlayer* Owner = GetPawnChecked<APNCharacterPlayer>();
-	
+
 	if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
 	{
 		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 1);
 	}
-	
+
 	Owner->MoveByInput(InputActionValue.Get<FVector2D>());
-	
+
 	LastMovementInput = InputActionValue.Get<FVector2D>();
 }
 
-void UPNPlayerComponent::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
+void UPNPlayerInputComponent::OnMovementUpdated(float DeltaSeconds, FVector OldLocation, FVector OldVelocity)
 {
 	APNCharacter* Owner = GetPawn<APNCharacter>();
 	if (Owner == nullptr)
@@ -148,14 +144,14 @@ void UPNPlayerComponent::OnMovementUpdated(float DeltaSeconds, FVector OldLocati
 	}
 }
 
-void UPNPlayerComponent::Input_Look(const FInputActionValue& InputActionValue)
+void UPNPlayerInputComponent::Input_Look(const FInputActionValue& InputActionValue)
 {
 	APawn* Owner = GetPawnChecked<APawn>();
 	APNPlayerController* PlayerController = CastChecked<APNPlayerController>(Owner->GetController());
 	PlayerController->RotationByInput(InputActionValue.Get<FVector2D>());
 }
 
-void UPNPlayerComponent::Input_EnableLockOn(const FInputActionValue& InputActionValue)
+void UPNPlayerInputComponent::Input_EnableLockOn(const FInputActionValue& InputActionValue)
 {
 	bIsEnableLockOn = !bIsEnableLockOn;
 
@@ -167,7 +163,7 @@ void UPNPlayerComponent::Input_EnableLockOn(const FInputActionValue& InputAction
 	}
 }
 
-void UPNPlayerComponent::Input_LockOn(const FInputActionValue& InputActionValue)
+void UPNPlayerInputComponent::Input_LockOn(const FInputActionValue& InputActionValue)
 {
 	if (bIsEnableLockOn == false)
 	{
@@ -179,7 +175,7 @@ void UPNPlayerComponent::Input_LockOn(const FInputActionValue& InputActionValue)
 	PlayerController->SetLockOnTargetActor();
 }
 
-void UPNPlayerComponent::Input_AbilityPressed(FGameplayTag InputTag)
+void UPNPlayerInputComponent::Input_AbilityPressed(FGameplayTag InputTag)
 {
 	APawn* Owner = GetPawn<APawn>();
 	if (Owner == nullptr)
@@ -202,7 +198,7 @@ void UPNPlayerComponent::Input_AbilityPressed(FGameplayTag InputTag)
 	ASC->AbilityInputPressed(InputTag);
 }
 
-void UPNPlayerComponent::Input_AbilityReleased(FGameplayTag InputTag)
+void UPNPlayerInputComponent::Input_AbilityReleased(FGameplayTag InputTag)
 {
 	APawn* Owner = GetPawn<APawn>();
 	if (Owner == nullptr)
@@ -225,7 +221,7 @@ void UPNPlayerComponent::Input_AbilityReleased(FGameplayTag InputTag)
 	ASC->AbilityInputReleased(InputTag);
 }
 
-void UPNPlayerComponent::OnUpdateActionTag(const FGameplayTag GameplayTag, int32 Count) const
+void UPNPlayerInputComponent::OnUpdateActionTag(const FGameplayTag GameplayTag, int32 Count) const
 {
 	if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action) == false)
 	{

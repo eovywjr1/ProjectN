@@ -3,8 +3,6 @@
 
 #include "PNPawnComponent.h"
 
-#include "PNPlayerComponent.h"
-
 UPNPawnComponent::UPNPawnComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {

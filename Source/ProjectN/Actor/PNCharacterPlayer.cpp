@@ -6,7 +6,7 @@
 #include "Component/PNEnhancedInputComponent.h"
 #include "Component/PNPawnComponent.h"
 #include "Component/PNPawnData.h"
-#include "Component/PNPlayerComponent.h"
+#include "Component/PNPlayerInputComponent.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Player/PNPlayerState.h"
@@ -16,7 +16,7 @@ APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializ
 {
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
-	PlayerComponent = CreateDefaultSubobject<UPNPlayerComponent>(TEXT("PlayerComponent"));
+	PNPlayerInputComponent = CreateDefaultSubobject<UPNPlayerInputComponent>(TEXT("PlayerInputComponent"));
 }
 
 void APNCharacterPlayer::PossessedBy(AController* NewController)
@@ -47,16 +47,14 @@ void APNCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	if (PlayerComponent)
-	{
-		PlayerComponent->InitializePlayerInput(PlayerInputComponent);
-	}
+	check(PNPlayerInputComponent);
+	PNPlayerInputComponent->InitializePlayerInput(PlayerInputComponent);
 }
 
 void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)
 {
 	check(Controller);
-	
+
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
 	const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);

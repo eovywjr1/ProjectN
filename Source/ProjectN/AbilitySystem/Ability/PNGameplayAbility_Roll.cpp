@@ -6,7 +6,7 @@
 #include "PNGameplayTags.h"
 #include "PNLogChannels.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
-#include "Component/PNPlayerComponent.h"
+#include "Component/PNPlayerInputComponent.h"
 #include "GameFramework/Character.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -31,13 +31,13 @@ void UGameplayAbilityTask_RollMove::Activate()
 void UGameplayAbilityTask_RollMove::TickTask(float DeltaTime)
 {
 	ACharacter* Avatar = CastChecked<ACharacter>(GetAvatarActor());
-	const UPNPlayerComponent* PlayerComponent = Avatar->FindComponentByClass<UPNPlayerComponent>();
-	if (PlayerComponent == nullptr)
+	const UPNPlayerInputComponent* PlayerInputComponent = Avatar->FindComponentByClass<UPNPlayerInputComponent>();
+	if (PlayerInputComponent == nullptr)
 	{
 		return;
 	}
 
-	const FVector2D LastMovementInput = PlayerComponent->GetLastMovementInput();
+	const FVector2D LastMovementInput = PlayerInputComponent->GetLastMovementInput();
 	FVector RollDirection;
 
 	if (LastMovementInput.IsNearlyZero())
@@ -72,13 +72,13 @@ void UPNGameplayAbility_Roll::ActivateAbility(const FGameplayAbilitySpecHandle H
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
 	APawn* AvatarActor = CastChecked<APawn>(ActorInfo->AvatarActor.Get());
-	UPNPlayerComponent* PlayerComponent = AvatarActor->FindComponentByClass<UPNPlayerComponent>();
-	if (PlayerComponent == nullptr)
+	UPNPlayerInputComponent* PlayerInputComponent = AvatarActor->FindComponentByClass<UPNPlayerInputComponent>();
+	if (PlayerInputComponent == nullptr)
 	{
 		return;
 	}
 
-	PlayerComponent->EnableInput(false);
+	PlayerInputComponent->EnableInput(false);
 
 	if (RollActionMontage)
 	{
@@ -107,13 +107,13 @@ void UPNGameplayAbility_Roll::EndAbility(const FGameplayAbilitySpecHandle Handle
 		return;
 	}
 
-	UPNPlayerComponent* PlayerComponent = AvatarActor->FindComponentByClass<UPNPlayerComponent>();
-	if (PlayerComponent == nullptr)
+	UPNPlayerInputComponent* PlayerInputComponent = AvatarActor->FindComponentByClass<UPNPlayerInputComponent>();
+	if (PlayerInputComponent == nullptr)
 	{
 		return;
 	}
 
-	PlayerComponent->EnableInput(true);
+	PlayerInputComponent->EnableInput(true);
 }
 
 void UPNGameplayAbility_Roll::OnCompleteCallback()

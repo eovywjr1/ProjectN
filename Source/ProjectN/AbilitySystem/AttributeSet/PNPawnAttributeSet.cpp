@@ -27,9 +27,9 @@ void UPNPawnAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 
 	if (GetHealth() <= 0.0f && bOutOfHealth == false)
 	{
+		bOutOfHealth = true;
+		
 		Data.Target.AddLooseGameplayTag(FPNGameplayTags::Get().Status_Dead);
 		OnOutOfHealth.Broadcast();
-		
-		bOutOfHealth = true;
 	}
 }

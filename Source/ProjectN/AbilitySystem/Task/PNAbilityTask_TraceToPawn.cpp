@@ -13,20 +13,18 @@ void UPNAbilityTask_TraceToPawn::Activate()
 	bTickingTask = true;
 
 	SpawnedTargetActor = Cast<APNTargetActor_HitCheckActor>(Ability->GetWorld()->SpawnActorDeferred<AGameplayAbilityTargetActor>(TargetActorClass, FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn));
-	if (SpawnedTargetActor)
-	{
-		SpawnedTargetActor->TargetDataReadyDelegate.AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
-	}
+	check(SpawnedTargetActor);
 
-	if (UAbilitySystemComponent* AbilitySystemComponentPtr = AbilitySystemComponent.Get())
-	{
-		const FTransform SpawnTransform = AbilitySystemComponentPtr->GetAvatarActor()->GetTransform();
-		SpawnedTargetActor->FinishSpawning(SpawnTransform);
+	SpawnedTargetActor->TargetDataReadyDelegate.AddUObject(this, &ThisClass::OnTargetDataReadyCallback);
 
-		AbilitySystemComponentPtr->SpawnedTargetActors.Push(SpawnedTargetActor);
-		SpawnedTargetActor->SetAttackHitBoxData(HitBoxData);
-		SpawnedTargetActor->StartTargeting(Ability);
-	}
+	UAbilitySystemComponent* AbilitySystemComponentPtr = AbilitySystemComponent.Get();
+	check(AbilitySystemComponentPtr);
+	const FTransform SpawnTransform = AbilitySystemComponentPtr->GetAvatarActor()->GetTransform();
+	SpawnedTargetActor->FinishSpawning(SpawnTransform);
+
+	AbilitySystemComponentPtr->SpawnedTargetActors.Push(SpawnedTargetActor);
+	SpawnedTargetActor->SetAttackHitBoxData(HitBoxData);
+	SpawnedTargetActor->StartTargeting(Ability);
 
 	SetWaitingOnAvatar();
 }
@@ -43,8 +41,6 @@ void UPNAbilityTask_TraceToPawn::OnDestroy(bool bInOwnerFinished)
 
 void UPNAbilityTask_TraceToPawn::TickTask(float DeltaTime)
 {
-	Super::TickTask(DeltaTime);
-
 	ElapsedTime += DeltaTime;
 	if (HitBoxData.HitBoxDurationTime < ElapsedTime)
 	{
@@ -56,6 +52,8 @@ void UPNAbilityTask_TraceToPawn::TickTask(float DeltaTime)
 
 		bTickingTask = false;
 		EndTask();
+		
+		return;
 	}
 
 	SpawnedTargetActor->ConfirmTargetingAndContinue();
@@ -75,6 +73,6 @@ void UPNAbilityTask_TraceToPawn::OnTargetDataReadyCallback(const FGameplayAbilit
 	{
 		return;
 	}
-	
+
 	HitActors.Append(TargetDataHandle.Get(0)->GetActors());
 }

@@ -71,35 +71,34 @@ void UPNGameplayAbility_Attack::OnGameplayEvent(FGameplayEventData Payload)
 
 void UPNGameplayAbility_Attack::AttackHitCheck()
 {
-	if (const UPNWeaponAttributeSet* WeaponAttributeSet = GetAbilitySystemComponentFromActorInfo()->GetSet<UPNWeaponAttributeSet>())
+	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Checked();
+	FGameplayTagContainer TagContainer;
+	AbilitySystemComponent->GetOwnedGameplayTags(TagContainer);
+
+	FGameplayTag AttackTag;
+	for (const FGameplayTag& GameplayTag : TagContainer)
 	{
-		UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo_Checked();
-
-		FGameplayTagContainer TagContainer;
-		AbilitySystemComponent->GetOwnedGameplayTags(TagContainer);
-
-		FGameplayTag AttackTag;
-		for (const FGameplayTag& GameplayTag : TagContainer)
+		if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action_Attack))
 		{
-			if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action_Attack))
-			{
-				AttackTag = GameplayTag;
-				break;
-			}
+			AttackTag = GameplayTag;
+			break;
 		}
-		FHitBoxData AttackHitBoxData;
-		WeaponAttributeSet->GetAttackHitBoxData(AttackTag, AttackHitBoxData);
+	}
+	
+	const UPNWeaponAttributeSet* WeaponAttributeSet = GetAbilitySystemComponentFromActorInfo()->GetSet<UPNWeaponAttributeSet>();
+	check(WeaponAttributeSet);
+	FHitBoxData AttackHitBoxData;
+	WeaponAttributeSet->GetAttackHitBoxData(AttackTag, AttackHitBoxData);
 
-		if (TargetActorHitCheckClass)
-		{
-			UPNAbilityTask_TraceToPawn* AttackTraceTask = UPNAbilityTask_TraceToPawn::CreateTask(this, TargetActorHitCheckClass, AttackHitBoxData);
-			AttackTraceTask->OnComplete.AddUObject(this, &ThisClass::OnAttackHitTraceResultCallback);
-			AttackTraceTask->ReadyForActivation();
-		}
+	if (TargetActorHitCheckClass)
+	{
+		UPNAbilityTask_TraceToPawn* AttackTraceTask = UPNAbilityTask_TraceToPawn::CreateTask(this, TargetActorHitCheckClass, AttackHitBoxData);
+		AttackTraceTask->OnComplete.AddUObject(this, &ThisClass::OnAttackHitTraceResultCallback);
+		AttackTraceTask->ReadyForActivation();
 	}
 }
 
-void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle) 
+void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
 	if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, 0))
 	{

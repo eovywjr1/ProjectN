@@ -7,7 +7,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 
 constexpr uint8 GridDivisionCount = 10;
-constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount * GridDivisionCount;
+constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount;
 
 APNPlayerController::APNPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
@@ -40,7 +40,7 @@ bool APNPlayerController::CanCameraInputControl() const
 	return true;
 }
 
-void APNPlayerController::RotationByInput(const FVector2D LookAxisVector) 
+void APNPlayerController::RotationByInput(const FVector2D LookAxisVector)
 {
 	if (CanCameraInputControl() == false)
 	{
@@ -140,13 +140,16 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 
 	const FVector CameraLocation = PlayerCameraManager->GetCameraLocation();
 	const FTransform ComponentTransform = CapsuleComponent->GetComponentTransform();
+	const FVector CameraToTarget = (TargetLocation - CameraLocation).GetSafeNormal();
+
+	const FVector RightVector = FVector::CrossProduct(FVector::UpVector, CameraToTarget).GetSafeNormal();
+	const FVector UpVector = FVector::CrossProduct(CameraToTarget, RightVector).GetSafeNormal();
 
 	const float ScaledRadius = CapsuleComponent->GetScaledCapsuleRadius();
 	const float ScaledHalfHeight = CapsuleComponent->GetScaledCapsuleHalfHeight();
 
 	const float BoxHeight = ScaledHalfHeight * 2.0f / GridDivisionCount;
 	const float BoxWidth = (ScaledRadius * 2) / GridDivisionCount;
-	const float BoxDepth = (ScaledRadius * 2) / GridDivisionCount;
 
 	FCollisionQueryParams QueryParams;
 	QueryParams.AddIgnoredActor(OwnerPawn);
@@ -154,40 +157,34 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 	const float FOVRadians = FMath::DegreesToRadians(PlayerCameraManager->GetFOVAngle());
 	const float CosHalfFOV = FMath::Cos(FOVRadians * 0.5f);
 
-	TArray<FVector> BoxCenters;
+	TArray<FVector> CheckPoints;
 	FCriticalSection BoxCenterCriticalSection;
-	BoxCenters.Reserve(TotalGridPoints);
+	CheckPoints.Reserve(TotalGridPoints);
 
-	FThreadSafeCounter TotalBoxCounter(0);
-
+	FThreadSafeCounter TotalPointCounter(0);
+	
 	ParallelFor(TotalGridPoints,
-	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, BoxDepth, ComponentTransform, CameraLocation, CosHalfFOV, &BoxCenters, &BoxCenterCriticalSection, &TotalBoxCounter](int32 Index)
+	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, RightVector, UpVector, ComponentTransform, CameraLocation, CosHalfFOV, &CheckPoints, &BoxCenterCriticalSection, &TotalPointCounter](int32 Index)
 	            {
-		            const int32 HeightIndex = Index / (GridDivisionCount * GridDivisionCount);
-		            const int32 WidthIndex = (Index / GridDivisionCount) % GridDivisionCount;
-		            const int32 DepthIndex = Index % GridDivisionCount;
+		            const int32 HeightIndex = Index / GridDivisionCount;
+		            const int32 WidthIndex = Index % GridDivisionCount;
 
-		            FVector BoxCenter = ComponentTransform.GetLocation();
-		            BoxCenter.X += (-ScaledRadius + (BoxWidth / 2) + (BoxWidth * WidthIndex));
-		            BoxCenter.Y += (-ScaledRadius + (BoxDepth / 2) + (BoxDepth * DepthIndex));
-		            BoxCenter.Z += (-ScaledHalfHeight + (BoxHeight / 2) + (BoxHeight * HeightIndex));
+		            const float VerticalOffset = -ScaledHalfHeight + (BoxHeight / 2) + (BoxHeight * HeightIndex);
+		            const float HorizontalOffset = -ScaledRadius + (BoxWidth / 2) + (BoxWidth * WidthIndex);
+		            
+	            	FVector Point = ComponentTransform.GetLocation();
+		            Point += UpVector * VerticalOffset + RightVector * HorizontalOffset;
 
-		            const FVector LocalBoxCenter = ComponentTransform.InverseTransformPosition(BoxCenter);
-		            if (ScaledHalfHeight < FMath::Abs(LocalBoxCenter.Z) || ScaledRadius < FMath::Abs(LocalBoxCenter.X))
+		            const FVector LocalPoint = ComponentTransform.InverseTransformPosition(Point);
+		            if (ScaledHalfHeight < FMath::Abs(LocalPoint.Z) || ScaledRadius < FMath::Sqrt(FMath::Square(LocalPoint.X) + FMath::Square(LocalPoint.Y)))
 		            {
 			            return;
 		            }
 
-		            const float RadialDistance = FMath::Sqrt(LocalBoxCenter.X * LocalBoxCenter.X + LocalBoxCenter.Y * LocalBoxCenter.Y);
-		            if (RadialDistance > ScaledRadius)
-		            {
-			            return;
-		            }
+		            TotalPointCounter.Increment();
 
-		            TotalBoxCounter.Increment();
-
-		            const FVector DirectionCameraToBox = (BoxCenter - CameraLocation).GetSafeNormal();
-		            const float CosAngleCameraToBox = FVector::DotProduct(PlayerCameraManager->GetActorForwardVector(), DirectionCameraToBox);
+		            const FVector DirectionCameraToPoint = (Point - CameraLocation).GetSafeNormal();
+		            const float CosAngleCameraToBox = FVector::DotProduct(PlayerCameraManager->GetActorForwardVector(), DirectionCameraToPoint);
 		            if (CosAngleCameraToBox < CosHalfFOV)
 		            {
 			            return;
@@ -195,30 +192,28 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 
 		            {
 			            FScopeLock Lock(&BoxCenterCriticalSection);
-			            BoxCenters.Add(BoxCenter);
+			            CheckPoints.Add(Point);
 		            }
 	            });
 
-	uint8 VisibleBoxCount = 0;
+	uint8 VisiblePointCount = 0;
 
-	for (const FVector& BoxCenter : BoxCenters)
+	for (const FVector& Point : CheckPoints)
 	{
 		FHitResult HitResult;
-		const FCollisionShape BoxShape = FCollisionShape::MakeBox(FVector(BoxWidth / 2, 1.0f, BoxHeight / 2));
-		const FQuat BoxRotation = ComponentTransform.GetRotation();
-		const bool bHit = GetWorld()->SweepSingleByChannel(HitResult, BoxCenter, CameraLocation, BoxRotation, ECC_Visibility, BoxShape, QueryParams);
+		const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Point, CameraLocation, ECC_Visibility, QueryParams);
 		if (bHit == false)
 		{
-			++VisibleBoxCount;
+			++VisiblePointCount;
 		}
 
 		// #ifdef ENABLE_DRAW_DEBUG
-		// 		const FColor BoxColor = bHit == false ? FColor::Green : FColor::Red;
-		// 		DrawDebugBox(GetWorld(), BoxCenter, FVector(BoxWidth / 2, 1.0f, BoxHeight / 2), BoxRotation, BoxColor, false, 5.0f);
+		// 		const FColor PointColor = bHit == false ? FColor::Green : FColor::Red;
+		// 		DrawDebugPoint(GetWorld(), Point, 5.0f, PointColor, false, 5.0f);
 		// #endif
 	}
 
-	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisibleBoxCount, TotalBoxCounter.GetValue());
+	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisiblePointCount, TotalPointCounter.GetValue());
 }
 
 void APNPlayerController::CheckLockOnTimerCallback()

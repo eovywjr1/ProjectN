@@ -19,26 +19,26 @@ void FPNGameplayTags::InitializeNativeTags()
 
 void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 {
-	AddTag(InputTag_Move, "InputTag.Move", "Move input.");
-	AddTag(InputTag_Jump, "InputTag.Jump", "Jump input.");
-	AddTag(InputTag_Look, "InputTag.Look", "Look input.");
-	AddTag(InputTag_LockOn, "InputTag.LockOn", "LockOn input.");
-	AddTag(InputTag_EnableLockOn, "InputTag.EnableLockOn", "EnableLockOn input.");
+	AddTag(InputTag_Move, TEXT("InputTag.Move"), TEXT("Move input."));
+	AddTag(InputTag_Jump, TEXT("InputTag.Jump"), TEXT("Jump input."));
+	AddTag(InputTag_Look, TEXT("InputTag.Look"), TEXT("Look input."));
+	AddTag(InputTag_LockOn, TEXT("InputTag.LockOn"), TEXT("LockOn input."));
+	AddTag(InputTag_EnableLockOn, TEXT("InputTag.EnableLockOn"), TEXT("EnableLockOn input."));
 
-	AddTag(Status_Idle, "Status.Idle", "Status Idle");
-	AddTag(Status_Dead, "Status.Dead", "Status Dead");
-	AddTag(Status_Peace, "Status.Peace", "Status Peace");
-	AddTag(Status_Fight, "Status.Fight", "Status Fight");
+	AddTag(Status_Idle, TEXT("Status.Idle"), TEXT("Status Idle"));
+	AddTag(Status_Dead, TEXT("Status.Dead"), TEXT("Status Dead"));
+	AddTag(Status_Peace, TEXT("Status.Peace"), TEXT("Status Peace"));
+	AddTag(Status_Fight, TEXT("Status.Fight"), TEXT("Status Fight"));
 	
-	AddTag(Action, "Action", "Action");
-	AddTag(Action_Jump, "Action.Jump", "Action Jump");
-	AddTag(Action_Move, "Action.Move", "Action Move");
-	AddTag(Action_Run, "Action.Run", "Action Run");
-	AddTag(Action_Roll, "Action.Roll", "Action Roll");
-	AddTag(Action_Guard, "Action.Guard", "Action Guard");
-	AddTag(Action_Attack, "Action.Attack", "Action Attack");
+	AddTag(Action, TEXT("Action"), TEXT("Action"));
+	AddTag(Action_Jump, TEXT("Action.Jump"), TEXT("Action Jump"));
+	AddTag(Action_Move, TEXT("Action.Move"), TEXT("Action Move"));
+	AddTag(Action_Run, TEXT("Action.Run"), TEXT("Action Run"));
+	AddTag(Action_Roll, TEXT("Action.Roll"), TEXT("Action Roll"));
+	AddTag(Action_Guard, TEXT("Action.Guard"), TEXT("Action Guard"));
+	AddTag(Action_Attack, TEXT("Action.Attack"), TEXT("Action Attack"));
 	
-	AddTag(GameplayEvent_AttackHitCheck, "GameplayEvent.AttackHitCheck", "GameplayEvent AttackHitCheck");
+	AddTag(GameplayEvent_AttackHitCheck, TEXT("GameplayEvent.AttackHitCheck"), TEXT("GameplayEvent AttackHitCheck"));
 }
 
 void FPNGameplayTags::AddTag(FGameplayTag& OutTag, const FName TagName, const FString TagComment)

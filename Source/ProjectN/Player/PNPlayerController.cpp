@@ -30,6 +30,14 @@ void APNPlayerController::Tick(float DeltaTime)
 	}
 }
 
+void APNPlayerController::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	FInputModeGameOnly GameOnlyInputMode;
+	SetInputMode(GameOnlyInputMode);
+}
+
 bool APNPlayerController::CanCameraInputControl() const
 {
 	if (IsValid(LockOnTargetActor))
@@ -207,10 +215,10 @@ bool APNPlayerController::CanLockOnTargetActor(AActor* TargetActor) const
 			++VisiblePointCount;
 		}
 
-		// #ifdef ENABLE_DRAW_DEBUG
-		// 		const FColor PointColor = bHit == false ? FColor::Green : FColor::Red;
-		// 		DrawDebugPoint(GetWorld(), Point, 5.0f, PointColor, false, 5.0f);
-		// #endif
+		#ifdef ENABLE_DRAW_DEBUG
+				const FColor PointColor = bHit == false ? FColor::Green : FColor::Red;
+				DrawDebugPoint(GetWorld(), Point, 5.0f, PointColor, false, 5.0f);
+		#endif
 	}
 
 	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisiblePointCount, TotalPointCounter.GetValue());

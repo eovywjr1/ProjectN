@@ -15,11 +15,6 @@ class PROJECTN_API APNPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 
-private:
-	APNPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-
-	virtual void Tick(float DeltaSeconds) override final;
-
 public:
 	bool CanCameraInputControl() const;
 	
@@ -29,6 +24,11 @@ public:
 	FORCEINLINE void DisableLockOn() { LockOnTargetActor = nullptr; }
 
 private:
+	APNPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+
+	virtual void Tick(float DeltaSeconds) override final;
+	virtual void BeginPlay() override final;
+
 	bool CanLockOnTargetActor(AActor* TargetActor) const;
 
 	UFUNCTION()

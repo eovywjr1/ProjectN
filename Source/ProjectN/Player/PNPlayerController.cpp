@@ -3,6 +3,7 @@
 
 #include "Player/PNPlayerController.h"
 
+#include "PNCheatManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 
@@ -12,7 +13,11 @@ constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount;
 APNPlayerController::APNPlayerController(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer),
 	  LockOnTargetVisibleAreaRate(30)
-{}
+{
+#if UE_WITH_CHEAT_MANAGER
+	CheatClass = UPNCheatManager::StaticClass();
+#endif
+}
 
 void APNPlayerController::Tick(float DeltaTime)
 {

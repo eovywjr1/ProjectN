@@ -9,6 +9,7 @@
 #include "Component/PNPlayerInputComponent.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "Component/PNInventoryComponent.h"
 #include "Player/PNPlayerState.h"
 
 APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +18,7 @@ APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializ
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
 	PNPlayerInputComponent = CreateDefaultSubobject<UPNPlayerInputComponent>(TEXT("PlayerInputComponent"));
+	CreateDefaultSubobject<UPNInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void APNCharacterPlayer::PossessedBy(AController* NewController)

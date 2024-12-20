@@ -23,6 +23,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Health);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, MaxHealth);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Damage);
+	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Power);
 	
 	mutable FOutOfHealthDelegate OnOutOfHealth;
 	
@@ -39,6 +40,9 @@ private:
 
 	UPROPERTY()
 	FGameplayAttributeData Damage;
+	
+	UPROPERTY()
+	FGameplayAttributeData Power;
 	
 	bool bOutOfHealth = false;
 };

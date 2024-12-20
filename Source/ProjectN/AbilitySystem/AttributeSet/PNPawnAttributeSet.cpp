@@ -24,11 +24,18 @@ void UPNPawnAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		SetHealth(FMath::Clamp(GetHealth() - GetDamage(), 0.0f, GetMaxHealth()));
 		SetDamage(0.0f);
 	}
+	else if (Data.EvaluatedData.Attribute == GetPowerAttribute())
+	{
+		if (GetPower() < 0.0f)
+		{
+			SetHealth(0.0f);
+		}
+	}
 
 	if (GetHealth() <= 0.0f && bOutOfHealth == false)
 	{
 		bOutOfHealth = true;
-		
+
 		Data.Target.AddLooseGameplayTag(FPNGameplayTags::Get().Status_Dead);
 		OnOutOfHealth.Broadcast();
 	}

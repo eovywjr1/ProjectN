@@ -3,10 +3,77 @@
 
 #include "PNStatusActorComponent.h"
 
-#include "AbilitySystemComponent.h"
-#include "Actor/PNCharacter.h"
+#include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
+#include "Actor/PNCharacter.h"
+#include "DataTable/EquipmentDataTable.h"
+#include "DataTable/StatusDataTable.h"
+#include "Subsystem/PNGameDataSubsystem.h"
+
+void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable* EquipmentDataTable)
+{
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
+
+	UPNAbilitySystemComponent* AbilitySystemComponent = Cast<UPNAbilitySystemComponent>(Owner->GetAbilitySystemComponent());
+	check(AbilitySystemComponent);
+
+	if (EquipmentDataTable == nullptr)
+	{
+		return;
+	}
+
+	const UPNGameDataSubsystem* DataSubsystem = UPNGameDataSubsystem::Get();
+	UGameplayEffect* EquipmentStatusEffect = NewObject<UGameplayEffect>(this, FName("EquipmentStatusEffect"));
+	EquipmentStatusEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
+
+	for (const FName StatusKey : EquipmentDataTable->GetStatusKeys())
+	{
+		if (StatusKey.IsNone())
+		{
+			continue;
+		}
+
+		const FStatusDataTable* StatusDataTable = DataSubsystem->GetData<FStatusDataTable>(StatusKey);
+		if (StatusDataTable == nullptr)
+		{
+			continue;
+		}
+
+		const FGameplayAttribute StatusAttribute = GetEquipmentStatusAttribute(StatusDataTable->GetStatusType());
+		if (StatusAttribute.IsValid() == false)
+		{
+			continue;
+		}
+
+		FGameplayModifierInfo StatusModifierInfo;
+		StatusModifierInfo.Attribute = StatusAttribute;
+		StatusModifierInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(StatusDataTable->GetValue()));
+
+		EquipmentStatusEffect->Modifiers.Add(StatusModifierInfo);
+	}
+
+	FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
+	EffectContextHandle.AddSourceObject(Owner);
+
+	FGameplayEffectSpecHandle EffectSpecHandle = AbilitySystemComponent->MakeOutgoingSpecByGameplayEffect(EquipmentStatusEffect, 0, EffectContextHandle);
+	ActiveEquipStatusEffectHandles.Add(EquipmentDataTable->GetEquipSlotType(), AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get()));
+}
+
+void UPNStatusActorComponent::UnApplyStatusFromEquipment(const EEquipSlotType EquipSlot)
+{
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
+
+	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
+	check(AbilitySystemComponent);
+
+	FActiveGameplayEffectHandle& ActiveEquipStatusEffectHandle = ActiveEquipStatusEffectHandles[EquipSlot];
+	AbilitySystemComponent->RemoveActiveGameplayEffect(ActiveEquipStatusEffectHandle);
+	ActiveEquipStatusEffectHandle.Invalidate();
+	ActiveEquipStatusEffectHandles.Remove(EquipSlot);
+}
 
 void UPNStatusActorComponent::BeginPlay()
 {
@@ -24,9 +91,26 @@ void UPNStatusActorComponent::BeginPlay()
 					AbilitySystemComponent->AddSpawnedAttribute(WeaponAttributeSet);
 				}
 			}
-			
+
 			// Todo. 데이터테이블과 연동해야 함	
 			AbilitySystemComponent->InitStats(UPNPawnAttributeSet::StaticClass(), nullptr);
 		}
 	}
+}
+
+const FGameplayAttribute UPNStatusActorComponent::GetEquipmentStatusAttribute(const EStatusType StatusType) const
+{
+	switch (StatusType)
+	{
+	case EStatusType::Power:
+		{
+			return UPNPawnAttributeSet::GetPowerAttribute();
+		}
+	default:
+		{
+			break;
+		}
+	}
+
+	return FGameplayAttribute();
 }

@@ -6,7 +6,8 @@
 #include "AbilitySystem/AttributeSet/PNAttributeSet.h"
 #include "PNPawnAttributeSet.generated.h"
 
-DECLARE_MULTICAST_DELEGATE(FOutOfHealthDelegate);
+DECLARE_MULTICAST_DELEGATE(FOutOfHpDelegate);
+DECLARE_MULTICAST_DELEGATE_OneParam(FOnChangedPawnAttributeDelegate, FGameplayAttribute);
 
 /**
  * 
@@ -16,27 +17,27 @@ class PROJECTN_API UPNPawnAttributeSet : public UPNAttributeSet
 {
 	GENERATED_BODY()
 	
-private:
+protected:
 	UPNPawnAttributeSet();
 	
 public:
-	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Health);
-	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, MaxHealth);
+	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Hp);
+	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, MaxHp);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Power);
 	
-	mutable FOutOfHealthDelegate OnOutOfHealth;
+	mutable FOutOfHpDelegate OnOutOfHp;
+	mutable FOnChangedPawnAttributeDelegate OnChangedPawnAttributeDelegate;
 	
-private:
-	virtual bool PreGameplayEffectExecute(struct FGameplayEffectModCallbackData &Data) override final;
-	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData &Data) override final;
+protected:
+	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData &Data) override;
 	
 private:
 	UPROPERTY()
-	FGameplayAttributeData Health;
+	FGameplayAttributeData Hp;
 
 	UPROPERTY()
-	FGameplayAttributeData MaxHealth;
+	FGameplayAttributeData MaxHp;
 
 	UPROPERTY()
 	FGameplayAttributeData Damage;
@@ -44,5 +45,5 @@ private:
 	UPROPERTY()
 	FGameplayAttributeData Power;
 	
-	bool bOutOfHealth = false;
+	bool bOutOfHp = false;
 };

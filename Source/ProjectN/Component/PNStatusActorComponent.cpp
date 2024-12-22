@@ -4,12 +4,13 @@
 #include "PNStatusActorComponent.h"
 
 #include "AbilitySystem/PNAbilitySystemComponent.h"
-#include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
+#include "AbilitySystem/AttributeSet/PNPlayerAttributeSet.h"
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 #include "Actor/PNCharacter.h"
 #include "DataTable/EquipmentDataTable.h"
 #include "DataTable/StatusDataTable.h"
 #include "Subsystem/PNGameDataSubsystem.h"
+#include "UI/PNHUD.h"
 
 void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable* EquipmentDataTable)
 {
@@ -41,7 +42,7 @@ void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable
 			continue;
 		}
 
-		const FGameplayAttribute StatusAttribute = GetEquipmentStatusAttribute(StatusDataTable->GetStatusType());
+		const FGameplayAttribute StatusAttribute = GetStatusAttribute(StatusDataTable->GetStatusType());
 		if (StatusAttribute.IsValid() == false)
 		{
 			continue;
@@ -75,30 +76,51 @@ void UPNStatusActorComponent::UnApplyStatusFromEquipment(const EEquipSlotType Eq
 	ActiveEquipStatusEffectHandles.Remove(EquipSlot);
 }
 
+void UPNStatusActorComponent::OnPawnAttributeSetChanged(FGameplayAttribute Attribute)
+{
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		Cast<APNHUD>(PlayerController->GetHUD())->OnStatusChangedDelegate.Broadcast(FObjectKey(GetOwner()), GetStatusType(Attribute));
+	}
+}
+
 void UPNStatusActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (APNCharacter* Owner = GetOwner<APNCharacter>())
-	{
-		if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
-		{
-			// Todo. 임시로 생성자에서 설정, 추후 무기 장착/획득할 때 넣어야 함
-			if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
-			{
-				if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
-				{
-					AbilitySystemComponent->AddSpawnedAttribute(WeaponAttributeSet);
-				}
-			}
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
 
-			// Todo. 데이터테이블과 연동해야 함	
+	if (UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent())
+	{
+		// Todo. 임시로 생성자에서 설정, 추후 무기 장착/획득할 때 넣어야 함
+		if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
+		{
+			if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
+			{
+				AbilitySystemComponent->AddSpawnedAttribute(WeaponAttributeSet);
+			}
+		}
+		
+		// Todo. 데이터테이블과 연동해야 함	
+		if (Owner->GetController()->IsPlayerController())
+		{
+			AbilitySystemComponent->InitStats(UPNPlayerAttributeSet::StaticClass(), nullptr);
+		}
+		else
+		{
 			AbilitySystemComponent->InitStats(UPNPawnAttributeSet::StaticClass(), nullptr);
+		}
+		
+		AbilitySystemComponent->GetSet<UPNPawnAttributeSet>()->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
+		if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+		{
+			Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
 		}
 	}
 }
 
-const FGameplayAttribute UPNStatusActorComponent::GetEquipmentStatusAttribute(const EStatusType StatusType) const
+FGameplayAttribute UPNStatusActorComponent::GetStatusAttribute(const EStatusType StatusType) const
 {
 	switch (StatusType)
 	{
@@ -113,4 +135,21 @@ const FGameplayAttribute UPNStatusActorComponent::GetEquipmentStatusAttribute(co
 	}
 
 	return FGameplayAttribute();
+}
+
+EStatusType UPNStatusActorComponent::GetStatusType(const FGameplayAttribute Attribute) const
+{
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
+
+	if (Attribute == UPNPawnAttributeSet::GetHpAttribute())
+	{
+		return EStatusType::Hp;
+	}
+	else if (Attribute == UPNPawnAttributeSet::GetMaxHpAttribute())
+	{
+		return EStatusType::MaxHp;
+	}
+
+	return EStatusType::Invalid;
 }

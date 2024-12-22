@@ -8,7 +8,9 @@ UENUM()
 enum class EStatusType : uint8
 {
 	Invalid,
-	Power
+	Power,
+	Hp,
+	MaxHp
 };
 
 USTRUCT()

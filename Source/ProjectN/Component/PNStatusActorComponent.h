@@ -23,11 +23,14 @@ class PROJECTN_API UPNStatusActorComponent : public UActorComponent
 public:
 	void ApplyStatusFromEquipment(const FEquipmentDataTable* EquipmentDataTable);
 	void UnApplyStatusFromEquipment(const EEquipSlotType EquipSlot);
+	
+	void OnPawnAttributeSetChanged(FGameplayAttribute Attribute);
 
 private:
 	virtual void BeginPlay() override final;
 	
-	const FGameplayAttribute GetEquipmentStatusAttribute(const EStatusType StatusType) const;
+	FGameplayAttribute GetStatusAttribute(const EStatusType StatusType) const;
+	EStatusType GetStatusType(const FGameplayAttribute Attribute) const;
 	
 private:
 	UPROPERTY()

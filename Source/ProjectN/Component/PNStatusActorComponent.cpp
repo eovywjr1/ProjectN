@@ -26,7 +26,7 @@ void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable
 	}
 
 	const UPNGameDataSubsystem* DataSubsystem = UPNGameDataSubsystem::Get();
-	UGameplayEffect* EquipmentStatusEffect = NewObject<UGameplayEffect>(this, FName("EquipmentStatusEffect"));
+	UGameplayEffect* EquipmentStatusEffect = NewObject<UGameplayEffect>(this, FName(TEXT("EquipmentStatusEffect")));
 	EquipmentStatusEffect->DurationPolicy = EGameplayEffectDurationType::Infinite;
 
 	for (const FName StatusKey : EquipmentDataTable->GetStatusKeys())
@@ -142,7 +142,7 @@ EStatusType UPNStatusActorComponent::GetStatusType(const FGameplayAttribute Attr
 	APNCharacter* Owner = GetOwner<APNCharacter>();
 	check(Owner);
 
-	if (Attribute == UPNPawnAttributeSet::GetHpAttribute())
+	if (Attribute == UPNPawnAttributeSet::GetHpAttribute() || Attribute == UPNPawnAttributeSet::GetDamageAttribute())
 	{
 		return EStatusType::Hp;
 	}

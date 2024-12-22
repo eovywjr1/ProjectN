@@ -83,18 +83,21 @@ void UPNPlayerInputComponent::BeginPlay()
 	EnableInput(true);
 
 	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetPlayerState<APNPlayerState>()->GetAbilitySystemComponent();
+#ifdef WITH_EDITOR
+	// Todo. 전투 전환 구현시 제거
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
+#endif
+
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
+	FGameplayEventData PayLoad;
+	AbilitySystemComponent->HandleGameplayEvent(FPNGameplayTags::Get().Status_Peace, &PayLoad);
+	
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Idle);
 
 	FGameplayTagContainer ActionTagContainer = UGameplayTagsManager::Get().RequestGameplayTagChildren(FPNGameplayTags::Get().Action);
 	OnActionTagDelegateHandle = AbilitySystemComponent->RegisterGenericGameplayTagEvent().AddUObject(this, &ThisClass::OnUpdateActionTag);
 
 	Owner->OnCharacterMovementUpdated.AddDynamic(this, &ThisClass::OnMovementUpdated);
-
-#ifdef WITH_EDITOR
-	// 테스트 용도
-	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
-#endif
 }
 
 void UPNPlayerInputComponent::DestroyComponent(bool bPromoteChildren)

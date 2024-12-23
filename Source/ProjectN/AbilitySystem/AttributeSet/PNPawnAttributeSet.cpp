@@ -10,7 +10,8 @@ UPNPawnAttributeSet::UPNPawnAttributeSet()
 	: MaxHp(1000.0f),
 	  Damage(0.0f),
 	  Power(0.0f),
-	  Heal(0.0f)
+	  Heal(0.0f),
+	  RunSpeedMultiplier(2.0f)
 
 {
 	InitHp(GetMaxHp());
@@ -36,7 +37,7 @@ void UPNPawnAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		{
 			SetHp(FMath::Clamp(GetHp() + GetHeal(), 0.0f, GetMaxHp()));
 		}
-		
+
 		SetHeal(0.0f);
 	}
 

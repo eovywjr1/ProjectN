@@ -13,17 +13,18 @@ UCLASS(config=Game)
 class APNCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
-	
+
 public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
-	
+
 	bool IsPlayer() const;
-	
-	bool IsIdle() const;
+
+	void SetMaxWalkSpeed(const float InMaxSpeed);
+	float GetMaxWalkSpeed() const;
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
-	
+
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UPNPawnComponent> PawnComponent;

@@ -12,6 +12,16 @@
 
 //////////////////////////////////////////////////////////////////////////
 
+void APNCharacter::SetMaxWalkSpeed(const float InMaxSpeed)
+{
+	GetCharacterMovement()->MaxWalkSpeed = InMaxSpeed;
+}
+
+float APNCharacter::GetMaxWalkSpeed() const
+{
+	return GetCharacterMovement()->MaxWalkSpeed;
+}
+
 APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UPNCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
 {

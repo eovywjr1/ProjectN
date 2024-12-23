@@ -139,7 +139,7 @@ void UPNStatusActorComponent::BeginPlay()
 	{
 		AbilitySystemComponent->InitStats(UPNPawnAttributeSet::StaticClass(), nullptr);
 	}
-
+	
 #ifdef WITH_EDITOR
 	// Todo. 전투 전환 구현시 제거
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
@@ -154,6 +154,8 @@ void UPNStatusActorComponent::BeginPlay()
 	{
 		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
 	}
+	
+	Owner->OnInitializedStatus();
 }
 
 FGameplayAttribute UPNStatusActorComponent::GetStatusAttribute(const EStatusType StatusType) const

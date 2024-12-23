@@ -21,6 +21,8 @@ public:
 
 	void SetMaxWalkSpeed(const float InMaxSpeed);
 	float GetMaxWalkSpeed() const;
+	
+	void OnInitializedStatus() const;
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());

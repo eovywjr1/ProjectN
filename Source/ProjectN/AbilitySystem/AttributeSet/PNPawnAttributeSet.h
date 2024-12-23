@@ -26,6 +26,7 @@ public:
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Damage);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Power);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, Heal);
+	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, WalkSpeed);
 	ATTRIBUTE_ACCESSORS(UPNPawnAttributeSet, RunSpeedMultiplier);
 	
 	mutable FOutOfHpDelegate OnOutOfHp;
@@ -49,6 +50,9 @@ private:
 
 	UPROPERTY()
 	FGameplayAttributeData Heal;
+	
+	UPROPERTY()
+	FGameplayAttributeData WalkSpeed;
 	
 	UPROPERTY()
 	FGameplayAttributeData RunSpeedMultiplier;

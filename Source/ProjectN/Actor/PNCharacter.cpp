@@ -3,6 +3,7 @@
 #include "PNCharacter.h"
 
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "Component/PNCharacterMovementComponent.h"
 #include "Component/PNPawnComponent.h"
 #include "Component/PNStatusActorComponent.h"
@@ -20,6 +21,11 @@ void APNCharacter::SetMaxWalkSpeed(const float InMaxSpeed)
 float APNCharacter::GetMaxWalkSpeed() const
 {
 	return GetCharacterMovement()->MaxWalkSpeed;
+}
+
+void APNCharacter::OnInitializedStatus() const
+{
+	GetCharacterMovement()->MaxWalkSpeed = GetAbilitySystemComponent()->GetSet<UPNPawnAttributeSet>()->GetWalkSpeed();
 }
 
 APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)

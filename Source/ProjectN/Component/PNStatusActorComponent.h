@@ -25,6 +25,8 @@ public:
 	void UnApplyStatusFromEquipment(const EEquipSlotType EquipSlot);
 	
 	void OnPawnAttributeSetChanged(FGameplayAttribute Attribute);
+	
+	void RequestHeal(const float HealAmount);
 
 private:
 	virtual void BeginPlay() override final;

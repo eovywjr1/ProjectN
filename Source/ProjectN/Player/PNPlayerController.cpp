@@ -199,14 +199,21 @@ bool APNPlayerController::CanLockOnTargetActor(const AActor* TargetActor) const
 	const float FOVRadians = FMath::DegreesToRadians(PlayerCameraManager->GetFOVAngle());
 	const float CosHalfFOV = FMath::Cos(FOVRadians * 0.5f);
 
-	TArray<FVector> CheckPoints;
-	FCriticalSection BoxCenterCriticalSection;
-	CheckPoints.Reserve(TotalGridPoints);
-
 	FThreadSafeCounter TotalPointCounter(0);
+	FThreadSafeCounter VisiblePointCounter(0);
+
+#ifdef ENABLE_DRAW_DEBUG
+	TMap<FVector, bool> CheckPointHits;
+	FCriticalSection CheckPointHitsCriticalSection;
+	CheckPointHits.Reserve(TotalGridPoints);
+#endif
 
 	ParallelFor(TotalGridPoints,
-	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, RightVector, UpVector, ComponentTransform, CameraLocation, CosHalfFOV, &CheckPoints, &BoxCenterCriticalSection, &TotalPointCounter](int32 Index)
+	            [this, ScaledHalfHeight, ScaledRadius, BoxHeight, BoxWidth, RightVector, UpVector, &ComponentTransform, CameraLocation, CosHalfFOV, &TotalPointCounter, &VisiblePointCounter, &QueryParams
+#ifdef ENABLE_DRAW_DEBUG
+		          , &CheckPointHits, &CheckPointHitsCriticalSection
+#endif
+	            ](int32 Index)
 	            {
 		            const int32 HeightIndex = Index / GridDivisionCount;
 		            const int32 WidthIndex = Index % GridDivisionCount;
@@ -232,30 +239,30 @@ bool APNPlayerController::CanLockOnTargetActor(const AActor* TargetActor) const
 			            return;
 		            }
 
+		            FHitResult HitResult;
+		            const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Point, CameraLocation, ECC_Visibility, QueryParams);
+		            if (bHit == false)
 		            {
-			            FScopeLock Lock(&BoxCenterCriticalSection);
-			            CheckPoints.Add(Point);
+			            VisiblePointCounter.Increment();
 		            }
-	            });
-
-	uint8 VisiblePointCount = 0;
-
-	for (const FVector& Point : CheckPoints)
-	{
-		FHitResult HitResult;
-		const bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Point, CameraLocation, ECC_Visibility, QueryParams);
-		if (bHit == false)
-		{
-			++VisiblePointCount;
-		}
 
 #ifdef ENABLE_DRAW_DEBUG
-		const FColor PointColor = bHit == false ? FColor::Green : FColor::Red;
-		DrawDebugPoint(GetWorld(), Point, 5.0f, PointColor, false, 5.0f);
+		            {
+			            FScopeLock Lock(&CheckPointHitsCriticalSection);
+			            CheckPointHits.Add(Point, bHit);
+		            }
 #endif
-	}
+	            });
 
-	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisiblePointCount, TotalPointCounter.GetValue());
+// #ifdef ENABLE_DRAW_DEBUG
+// 	for (const TPair<FVector, bool>& CheckPointHit : CheckPointHits)
+// 	{
+// 		const FColor PointColor = CheckPointHit.Value == false ? FColor::Green : FColor::Red;
+// 		DrawDebugPoint(GetWorld(), CheckPointHit.Key, 5.0f, PointColor, false, 5.0f);
+// 	}
+// #endif
+
+	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisiblePointCounter.GetValue(), TotalPointCounter.GetValue());
 }
 
 void APNPlayerController::CheckLockOnTimerCallback()
@@ -264,7 +271,7 @@ void APNPlayerController::CheckLockOnTimerCallback()
 	{
 		return;
 	}
-	
+
 	if (CanLockOnTargetActor(LockOnTargetActor))
 	{
 		GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);

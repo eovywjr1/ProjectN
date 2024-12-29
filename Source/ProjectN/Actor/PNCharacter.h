@@ -18,6 +18,7 @@ public:
 	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
 
 	bool IsPlayer() const;
+	bool IsRun() const;
 
 	void SetMaxWalkSpeed(const float InMaxSpeed);
 	float GetMaxWalkSpeed() const;

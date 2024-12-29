@@ -2,6 +2,7 @@
 
 #include "PNCharacter.h"
 
+#include "PNGameplayTags.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "Component/PNCharacterMovementComponent.h"
@@ -68,6 +69,17 @@ bool APNCharacter::IsPlayer() const
 	{
 		return false;
 	}
-	
+
 	return Controller->IsPlayerController();
+}
+
+bool APNCharacter::IsRun() const
+{
+	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent();
+	if (AbilitySystemComponent == nullptr)
+	{
+		return false;
+	}
+	
+	return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Action_Run);
 }

@@ -29,8 +29,6 @@ public:
 
 	const UInputAction* FindNativeInputActionForTag(const FGameplayTag& InputTag) const;
 
-	// const UInputAction* FindAbilityInputActionForTag(const FGameplayTag& InputTag) const;
-
 public:
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FPNInputAction> NativeInputActions;

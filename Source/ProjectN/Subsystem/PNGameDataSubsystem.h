@@ -40,7 +40,7 @@ public:
 
 		return static_cast<const T*>(FoundData->Get());
 	}
-	
+
 	static const UPNGameDataSubsystem* Get();
 
 private:
@@ -48,3 +48,20 @@ private:
 
 	TMap<TObjectPtr<const UScriptStruct>, TMap<FName, TObjectPtr<const FTableRowBase>>> DataMap;
 };
+
+template <typename T>
+bool IsValidDataTableKey(const FName Key)
+{
+	if (Key.IsValid() == false)
+	{
+		return false;
+	}
+
+	const T* DataTable = UPNGameDataSubsystem::Get()->GetData<T>(Key);
+	if (DataTable == nullptr)
+	{
+		return false;
+	}
+
+	return true;
+}

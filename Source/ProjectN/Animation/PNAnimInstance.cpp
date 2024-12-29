@@ -4,10 +4,7 @@
 #include "Animation/PNAnimInstance.h"
 
 #include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
 #include "PNGameplayTags.h"
-
-const FString PeaceString = "Status.Peace";
 
 UPNAnimInstance::UPNAnimInstance()
 	: bIsPeaceState(true)
@@ -19,19 +16,16 @@ void UPNAnimInstance::NativeBeginPlay()
 
 	if (AActor* Owner = GetOwningActor())
 	{
-		if (IAbilitySystemInterface* ASInterface = Cast<IAbilitySystemInterface>(Owner))
+		if (UAbilitySystemComponent* ASC = Owner->FindComponentByClass<UAbilitySystemComponent>())
 		{
-			if (UAbilitySystemComponent* ASComponent = ASInterface->GetAbilitySystemComponent())
-			{
-				ASComponent->RegisterGameplayTagEvent(FPNGameplayTags::FindTagByString(PeaceString)).AddUObject(this, &UPNAnimInstance::OnPeaceTagChanged);
-			}
+			ASC->RegisterGameplayTagEvent(FPNGameplayTags::Get().Status_Peace).AddUObject(this, &UPNAnimInstance::OnPeaceTagChanged);
 		}
 	}
 }
 
 void UPNAnimInstance::OnPeaceTagChanged(const FGameplayTag Tag, int32 NewCount)
 {
-	if (Tag == FPNGameplayTags::FindTagByString(PeaceString))
+	if (Tag == FPNGameplayTags::Get().Status_Peace)
 	{
 		bIsPeaceState = (NewCount > 0);
 	}

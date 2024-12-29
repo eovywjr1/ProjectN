@@ -28,13 +28,23 @@ public:
 	FGameplayTag InputTag_Move;
 	FGameplayTag InputTag_Jump;
 	FGameplayTag InputTag_Look;
+	FGameplayTag InputTag_LockOn;
+	FGameplayTag InputTag_NextLockOnTarget;
 
-	FGameplayTag Status_Idle;
-	FGameplayTag Status_Walking;
-	FGameplayTag Status_Jumping;
-	
+	FGameplayTag Status_Dead;
 	FGameplayTag Status_Peace;
 	FGameplayTag Status_Fight;
+	
+	FGameplayTag Action;
+	FGameplayTag Action_Idle;
+	FGameplayTag Action_Jump;
+	FGameplayTag Action_Move;
+	FGameplayTag Action_Run;
+	FGameplayTag Action_Roll;
+	FGameplayTag Action_Guard;
+	FGameplayTag Action_Attack;
+	
+	FGameplayTag GameplayEvent_AttackHitCheck;
 	
 private:
 	void AddAllTags(UGameplayTagsManager& Manager);

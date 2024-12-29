@@ -26,7 +26,26 @@ float APNCharacter::GetMaxWalkSpeed() const
 
 void APNCharacter::OnInitializedStatus() const
 {
-	GetCharacterMovement()->MaxWalkSpeed = GetAbilitySystemComponent()->GetSet<UPNPawnAttributeSet>()->GetWalkSpeed();
+	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponent();
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
+
+	GetCharacterMovement()->MaxWalkSpeed = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>()->GetWalkSpeed();
+}
+
+void APNCharacter::SetDead()
+{
+	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
+	SetActorEnableCollision(false);
+
+	UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+	AnimInstance->StopAllMontages(0.0f);
+	if (DeadMontage)
+	{
+		AnimInstance->Montage_Play(DeadMontage, 1.0f);
+	}
 }
 
 APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
@@ -80,6 +99,6 @@ bool APNCharacter::IsRun() const
 	{
 		return false;
 	}
-	
+
 	return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Action_Run);
 }

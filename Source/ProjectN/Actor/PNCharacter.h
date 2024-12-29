@@ -24,6 +24,8 @@ public:
 	float GetMaxWalkSpeed() const;
 	
 	void OnInitializedStatus() const;
+	
+	void SetDead();
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -31,4 +33,8 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UPNPawnComponent> PawnComponent;
+	
+private:
+	UPROPERTY(EditDefaultsOnly)
+	TObjectPtr<UAnimMontage> DeadMontage;
 };

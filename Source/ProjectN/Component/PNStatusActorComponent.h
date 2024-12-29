@@ -34,6 +34,8 @@ private:
 	FGameplayAttribute GetStatusAttribute(const EStatusType StatusType) const;
 	EStatusType GetStatusType(const FGameplayAttribute Attribute) const;
 	
+	void OnOutOfHp();
+	
 private:
 	UPROPERTY()
 	TMap<EEquipSlotType, FActiveGameplayEffectHandle> ActiveEquipStatusEffectHandles;

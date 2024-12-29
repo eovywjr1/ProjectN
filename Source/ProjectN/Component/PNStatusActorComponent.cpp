@@ -61,7 +61,7 @@ void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable
 	{
 		return;
 	}
-	
+
 	ActiveEquipStatusEffectHandles.Add(EquipmentDataTable->GetEquipSlotType(), ActiveEffectHandle);
 }
 
@@ -139,7 +139,16 @@ void UPNStatusActorComponent::BeginPlay()
 	{
 		AbilitySystemComponent->InitStats(UPNPawnAttributeSet::StaticClass(), nullptr);
 	}
-	
+
+	const UPNPawnAttributeSet* PawnAttributeSet = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>();
+	PawnAttributeSet->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
+	PawnAttributeSet->OnOutOfHp.AddUObject(this, &ThisClass::OnOutOfHp);
+	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	{
+		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
+	}
+
+
 #ifdef WITH_EDITOR
 	// Todo. 전투 전환 구현시 제거
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
@@ -149,12 +158,6 @@ void UPNStatusActorComponent::BeginPlay()
 	FGameplayEventData PayLoad;
 	AbilitySystemComponent->HandleGameplayEvent(FPNGameplayTags::Get().Status_Peace, &PayLoad);
 
-	AbilitySystemComponent->GetSet<UPNPawnAttributeSet>()->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
-	{
-		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
-	}
-	
 	Owner->OnInitializedStatus();
 }
 
@@ -190,4 +193,17 @@ EStatusType UPNStatusActorComponent::GetStatusType(const FGameplayAttribute Attr
 	}
 
 	return EStatusType::Invalid;
+}
+
+void UPNStatusActorComponent::OnOutOfHp()
+{
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
+
+	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
+	check(AbilitySystemComponent);
+
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Dead, 1);
+	
+	Owner->SetDead();
 }

@@ -11,6 +11,7 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEquipmentComponent.h"
 #include "Component/PNInventoryComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Player/PNPlayerState.h"
 
 APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializer)
@@ -60,6 +61,15 @@ void APNCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)
 {
 	check(Controller);
+	
+	bUseControllerRotationYaw = true;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
+	
+	if (IsRun() && MovementVector.Y >= 0.0f && FMath::Abs(MovementVector.X) > 0.0f)
+	{
+		bUseControllerRotationYaw = false;
+		GetCharacterMovement()->bOrientRotationToMovement = true;
+	}
 
 	const FRotator Rotation = Controller->GetControlRotation();
 	const FRotator YawRotation(0, Rotation.Yaw, 0);
@@ -68,11 +78,4 @@ void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)
 	
 	AddMovementInput(ForwardDirection, MovementVector.Y);
 	AddMovementInput(RightDirection, MovementVector.X);
-	
-	bUseControllerRotationYaw = true;
-	
-	if (IsRun() && MovementVector.Y >= 0.0f && FMath::Abs(MovementVector.X) > 0.0f)
-	{
-		bUseControllerRotationYaw = false;
-	}
 }

@@ -6,6 +6,7 @@
 #include "PNCheatManager.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "UI/PNHUD.h"
 
 constexpr uint8 GridDivisionCount = 10;
 constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount;
@@ -28,10 +29,6 @@ void APNPlayerController::Tick(float DeltaTime)
 		const FVector TargetLocation = LockOnTargetActor->GetActorLocation();
 		const FRotator NewRotation = (TargetLocation - PlayerCameraManager->GetCameraLocation()).Rotation();
 		SetControlRotation(NewRotation);
-
-#ifdef ENABLE_DRAW_DEBUG
-		DrawDebugPoint(GetWorld(), TargetLocation, 40.0f, FColor::White, false, -1.0f);
-#endif
 	}
 }
 
@@ -70,6 +67,9 @@ void APNPlayerController::ActivateLockOn(const bool bIsActivate)
 	{
 		LockOnTargetActor = nullptr;
 		CheckLockOnTimerHandle.Invalidate();
+		
+		Cast<APNHUD>(GetHUD())->OnDeactivatedLockOnDelegate.Broadcast();
+		
 		return;
 	}
 
@@ -113,6 +113,8 @@ void APNPlayerController::SetLockOnTargetActor(const AActor* const InLockOnTarge
 
 	LockOnTargetActor = InLockOnTargetActor;
 	GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);
+	
+	Cast<APNHUD>(GetHUD())->OnSetLockOnTargetDelegate.Broadcast(LockOnTargetActor);
 }
 
 void APNPlayerController::GetSortedLockOnTargetActor(TArray<AActor*>& InLockOnTargetActors) const
@@ -278,6 +280,6 @@ void APNPlayerController::CheckLockOnTimerCallback()
 	}
 	else
 	{
-		GetWorld()->GetTimerManager().SetTimer(ClearLockOnTargetTimerHandle, [this]() { LockOnTargetActor = nullptr; }, ClearLockOnTimerPeriod, false, ClearLockOnTimerPeriod);
+		GetWorld()->GetTimerManager().SetTimer(ClearLockOnTargetTimerHandle, [this]() { ActivateLockOn(false); }, ClearLockOnTimerPeriod, false, ClearLockOnTimerPeriod);
 	}
 }

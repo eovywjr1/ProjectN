@@ -13,8 +13,7 @@ void UPNHUDUIController::NativeOnInitialized()
 	APNHUD* HUD = Cast<APNHUD>(GetOwningPlayer()->GetHUD());
 	check(HUD);
 
-	HUD->OnActivatedLockOnDelegate.AddUObject(this, &ThisClass::SetLockOnTarget);
-	HUD->OnChangedLockOnTargetActorDelegate.AddUObject(this, &ThisClass::SetLockOnTarget);
+	HUD->OnSetLockOnTargetDelegate.AddUObject(this, &ThisClass::SetLockOnTarget);
 	HUD->OnDeactivatedLockOnDelegate.AddUObject(this, &ThisClass::OnDeactivatedLockOn);
 }
 

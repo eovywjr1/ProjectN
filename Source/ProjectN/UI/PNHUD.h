@@ -34,8 +34,7 @@ public:
 DECLARE_MULTICAST_DELEGATE_TwoParams(GameEvent_OnStatusChangedDelegate, FObjectKey, EStatusType);
 DECLARE_MULTICAST_DELEGATE_OneParam(GameEvent_OnInitStatusDelegate, FObjectKey);
 
-DECLARE_MULTICAST_DELEGATE_OneParam(GameEvent_OnActivatedLockOnDelegate, FObjectKey);
-DECLARE_MULTICAST_DELEGATE_OneParam(GameEvent_OnChangedLockOnTargetActorDelegate, FObjectKey);
+DECLARE_MULTICAST_DELEGATE_OneParam(GameEvent_OnSetLockOnTargetDelegate, FObjectKey);
 DECLARE_MULTICAST_DELEGATE(GameEvent_OnDeactivatedLockOnDelegate);
 
 /**
@@ -50,8 +49,7 @@ public:
 	GameEvent_OnStatusChangedDelegate OnStatusChangedDelegate;
 	GameEvent_OnInitStatusDelegate OnInitStatusDelegate;
 	
-	GameEvent_OnActivatedLockOnDelegate OnActivatedLockOnDelegate;
-	GameEvent_OnChangedLockOnTargetActorDelegate OnChangedLockOnTargetActorDelegate;
+	GameEvent_OnSetLockOnTargetDelegate OnSetLockOnTargetDelegate;
 	GameEvent_OnDeactivatedLockOnDelegate OnDeactivatedLockOnDelegate;
 	
 private:

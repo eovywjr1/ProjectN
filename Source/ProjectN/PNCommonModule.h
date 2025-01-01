@@ -35,5 +35,5 @@ public:
 enum class PNDistanceUnit : uint16
 {
 	Meter = 100,
-	DefaultMeasurementUnit = 100
+	DefaultMeasurementUnit = 100 * Meter
 };

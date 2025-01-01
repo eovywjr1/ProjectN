@@ -26,8 +26,8 @@ void APNPlayerController::Tick(float DeltaTime)
 
 	if (IsValid(LockOnTargetActor))
 	{
-		const FVector TargetLocation = LockOnTargetActor->GetActorLocation();
-		const FRotator NewRotation = (TargetLocation - PlayerCameraManager->GetCameraLocation()).Rotation();
+		FRotator NewRotation = GetControlRotation();
+		NewRotation.Yaw = (LockOnTargetActor->GetActorLocation() - PlayerCameraManager->GetCameraLocation()).Rotation().Yaw;
 		SetControlRotation(NewRotation);
 	}
 }
@@ -67,9 +67,9 @@ void APNPlayerController::ActivateLockOn(const bool bIsActivate)
 	{
 		LockOnTargetActor = nullptr;
 		CheckLockOnTimerHandle.Invalidate();
-		
+
 		Cast<APNHUD>(GetHUD())->OnDeactivatedLockOnDelegate.Broadcast();
-		
+
 		return;
 	}
 
@@ -113,7 +113,7 @@ void APNPlayerController::SetLockOnTargetActor(const AActor* const InLockOnTarge
 
 	LockOnTargetActor = InLockOnTargetActor;
 	GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);
-	
+
 	Cast<APNHUD>(GetHUD())->OnSetLockOnTargetDelegate.Broadcast(LockOnTargetActor);
 }
 
@@ -256,13 +256,13 @@ bool APNPlayerController::CanLockOnTargetActor(const AActor* TargetActor) const
 #endif
 	            });
 
-// #ifdef ENABLE_DRAW_DEBUG
-// 	for (const TPair<FVector, bool>& CheckPointHit : CheckPointHits)
-// 	{
-// 		const FColor PointColor = CheckPointHit.Value == false ? FColor::Green : FColor::Red;
-// 		DrawDebugPoint(GetWorld(), CheckPointHit.Key, 5.0f, PointColor, false, 5.0f);
-// 	}
-// #endif
+	// #ifdef ENABLE_DRAW_DEBUG
+	// 	for (const TPair<FVector, bool>& CheckPointHit : CheckPointHits)
+	// 	{
+	// 		const FColor PointColor = CheckPointHit.Value == false ? FColor::Green : FColor::Red;
+	// 		DrawDebugPoint(GetWorld(), CheckPointHit.Key, 5.0f, PointColor, false, 5.0f);
+	// 	}
+	// #endif
 
 	return LockOnTargetVisibleAreaRate <= FPNPercent::FromFraction(VisiblePointCounter.GetValue(), TotalPointCounter.GetValue());
 }

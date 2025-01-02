@@ -75,8 +75,3 @@ FActiveGameplayEffectHandle UPNAbilitySystemComponent::ApplyGameplayEffectToSelf
 	FGameplayEffectSpecHandle EffectSpecHandle = MakeOutgoingSpecByGameplayEffect(GameplayEffect, 0, EffectContextHandle);
 	return ApplyGameplayEffectSpecToSelf(*EffectSpecHandle.Data.Get());
 }
-
-UPNAbilitySystemComponent::UPNAbilitySystemComponent()
-{
-	SetIsReplicated(false);
-}

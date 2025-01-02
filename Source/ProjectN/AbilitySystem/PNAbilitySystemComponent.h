@@ -20,4 +20,7 @@ public:
 	
 	FGameplayEffectSpecHandle MakeOutgoingSpecByGameplayEffect(UGameplayEffect* GameplayEffect, float Level, FGameplayEffectContextHandle Context) const;
 	FActiveGameplayEffectHandle ApplyGameplayEffectToSelf(UGameplayEffect* GameplayEffect);
+	
+private:
+	UPNAbilitySystemComponent();
 };

@@ -22,14 +22,15 @@ public:
 
 	void ActivateLockOn(const bool bIsActivate);
 	void SetNextPriorityLockOnTargetActor();
+	
+	// Todo. 추후 몬스터가 감지하기 위해 Common하게 구현해야 함
+	bool CheckDetectTargetActor(const AActor* const TargetActor, const float DetectDistance) const;
 
 private:
 	APNPlayerController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	virtual void Tick(float DeltaSeconds) override final;
 	virtual void BeginPlay() override final;
-
-	bool CanLockOnTargetActor(const AActor* TargetActor) const;
 
 	UFUNCTION()
 	void CheckLockOnTimerCallback();

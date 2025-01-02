@@ -22,10 +22,11 @@ public:
 
 	void SetMaxWalkSpeed(const float InMaxSpeed);
 	float GetMaxWalkSpeed() const;
-	
+
 	void OnInitializedStatus() const;
-	
+
 	void SetDead();
+	FORCEINLINE bool IsDead() const { return bIsDead; };
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -33,8 +34,10 @@ protected:
 protected:
 	UPROPERTY(EditAnywhere)
 	TObjectPtr<UPNPawnComponent> PawnComponent;
-	
+
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> DeadMontage;
+
+	bool bIsDead = false;
 };

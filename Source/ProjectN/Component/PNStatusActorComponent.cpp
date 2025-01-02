@@ -10,8 +10,14 @@
 #include "Actor/PNCharacter.h"
 #include "DataTable/EquipmentDataTable.h"
 #include "DataTable/StatusDataTable.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "Player/PNPlayerController.h"
 #include "Subsystem/PNGameDataSubsystem.h"
 #include "UI/PNHUD.h"
+
+constexpr float CheckDetectEnemyPeriod = 1.0f;
+constexpr float CheckDetectEnemyRadius = 10.0f * static_cast<uint16>(PNDistanceUnit::Meter);
+constexpr float NoDetectionEnemyToPeaceTime = 5.0f;
 
 void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable* EquipmentDataTable)
 {
@@ -141,22 +147,23 @@ void UPNStatusActorComponent::BeginPlay()
 	}
 
 	const UPNPawnAttributeSet* PawnAttributeSet = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>();
-	PawnAttributeSet->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
 	PawnAttributeSet->OnOutOfHp.AddUObject(this, &ThisClass::OnOutOfHp);
+	PawnAttributeSet->OnDamagedDelegate.AddUObject(this, &ThisClass::OnDamaged);
+	PawnAttributeSet->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
+
 	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
 	{
 		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
 	}
 
-
-#ifdef WITH_EDITOR
-	// Todo. 전투 전환 구현시 제거
-	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Fight);
-#endif
-
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
 	FGameplayEventData PayLoad;
 	AbilitySystemComponent->HandleGameplayEvent(FPNGameplayTags::Get().Status_Peace, &PayLoad);
+
+	GetWorld()->GetTimerManager().SetTimer(DetectEnemyTimerHandle, this, &ThisClass::DetectEnemyTimerCallback, CheckDetectEnemyPeriod, true, CheckDetectEnemyPeriod);
+
+	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Attack, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
+	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Guard, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
 
 	Owner->OnInitializedStatus();
 }
@@ -195,7 +202,7 @@ EStatusType UPNStatusActorComponent::GetStatusType(const FGameplayAttribute Attr
 	return EStatusType::Invalid;
 }
 
-void UPNStatusActorComponent::OnOutOfHp()
+void UPNStatusActorComponent::OnOutOfHp() const
 {
 	APNCharacter* Owner = GetOwner<APNCharacter>();
 	check(Owner);
@@ -204,6 +211,67 @@ void UPNStatusActorComponent::OnOutOfHp()
 	check(AbilitySystemComponent);
 
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Dead, 1);
-	
+
 	Owner->SetDead();
+}
+
+void UPNStatusActorComponent::OnDamaged()
+{
+	SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
+}
+
+void UPNStatusActorComponent::SetPeaceOrFightStatus(const FGameplayTag StatusTag)
+{
+	if (StatusTag.MatchesTag(FPNGameplayTags::Get().Status_Fight) == false && StatusTag.MatchesTag(FPNGameplayTags::Get().Status_Peace) == false)
+	{
+		ensure(false);
+		return;
+	}
+
+	if (IAbilitySystemInterface* OwnerAbilitySystemInterface = GetOwner<IAbilitySystemInterface>())
+	{
+		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+		check(AbilitySystemComponent);
+
+		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Status_Fight, 0);
+		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Status_Peace, 0);
+		AbilitySystemComponent->SetLooseGameplayTagCount(StatusTag, 1);
+	}
+	
+	NoEnemyDetectTime = 0.0f;
+}
+
+void UPNStatusActorComponent::DetectEnemyTimerCallback()
+{
+	TArray<AActor*> ActorsToIgnore;
+	TArray<AActor*> OverlappingActors;
+	const FVector OwnerLocation = GetOwner()->GetActorLocation();
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, CheckDetectEnemyRadius, TArray<TEnumAsByte<EObjectTypeQuery>>(), APawn::StaticClass(), ActorsToIgnore, OverlappingActors);
+
+	if (APNPlayerController* PlayerController = Cast<APNPlayerController>(GetOwner<APawn>()->GetController()))
+	{
+		for (AActor* Actor : OverlappingActors)
+		{
+			if (PlayerController->CheckDetectTargetActor(Actor, CheckDetectEnemyRadius))
+			{
+				SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
+
+				return;
+			}
+		}
+	}
+
+	NoEnemyDetectTime += CheckDetectEnemyPeriod;
+	if (NoDetectionEnemyToPeaceTime <= NoEnemyDetectTime)
+	{
+		SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Peace);
+	}
+}
+
+void UPNStatusActorComponent::OnActionTagChanged(const FGameplayTag Tag, int32 NewCount)
+{
+	if ((Tag.MatchesTag(FPNGameplayTags::Get().Action_Attack) && NewCount > 0) || (Tag.MatchesTag(FPNGameplayTags::Get().Action_Guard) && NewCount > 0))
+	{
+		SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
+	}
 }

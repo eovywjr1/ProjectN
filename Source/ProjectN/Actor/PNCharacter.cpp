@@ -37,6 +37,8 @@ void APNCharacter::OnInitializedStatus() const
 
 void APNCharacter::SetDead()
 {
+	bIsDead = true;
+	
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	SetActorEnableCollision(false);
 

@@ -4,6 +4,7 @@
 #include "Player/PNPlayerController.h"
 
 #include "PNCheatManager.h"
+#include "Actor/PNCharacter.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/PNHUD.h"
@@ -132,7 +133,7 @@ void APNPlayerController::GetSortedLockOnTargetActor(TArray<AActor*>& InLockOnTa
 
 	for (AActor* Actor : OverlappingActors)
 	{
-		if (CanLockOnTargetActor(Actor) == false)
+		if (CheckDetectTargetActor(Actor, SearchLockOnTargetRadius) == false)
 		{
 			continue;
 		}
@@ -149,18 +150,18 @@ void APNPlayerController::GetSortedLockOnTargetActor(TArray<AActor*>& InLockOnTa
 	});
 }
 
-bool APNPlayerController::CanLockOnTargetActor(const AActor* TargetActor) const
+bool APNPlayerController::CheckDetectTargetActor(const AActor* const TargetActor, const float DetectDistance) const
 {
 	if (IsValid(TargetActor) == false)
 	{
 		return false;
 	}
 
-	// Todo. 공격 판정 / 죽음 구현 후 체크해야 함
-	// if (TargetActor->Dead())
-	// {
-	// 	return false;
-	// }
+	const APNCharacter* const TargetActorCast = Cast<APNCharacter>(TargetActor);
+	if (TargetActorCast->IsDead())
+	{
+		return false;
+	}
 
 	APawn* OwnerPawn = GetPawn();
 	if (TargetActor == OwnerPawn)
@@ -177,7 +178,7 @@ bool APNPlayerController::CanLockOnTargetActor(const AActor* TargetActor) const
 
 	const FVector OwnerPawnLocation = OwnerPawn->GetActorLocation();
 	const FVector TargetLocation = TargetActor->GetActorLocation();
-	if (SearchLockOnTargetRadius < FVector::Distance(OwnerPawnLocation, TargetLocation))
+	if (DetectDistance < FVector::Distance(OwnerPawnLocation, TargetLocation))
 	{
 		return false;
 	}
@@ -274,7 +275,7 @@ void APNPlayerController::CheckLockOnTimerCallback()
 		return;
 	}
 
-	if (CanLockOnTargetActor(LockOnTargetActor))
+	if (CheckDetectTargetActor(LockOnTargetActor, SearchLockOnTargetRadius))
 	{
 		GetWorld()->GetTimerManager().SetTimer(CheckLockOnTimerHandle, this, &ThisClass::CheckLockOnTimerCallback, CheckLockOnTimerPeriod, false, CheckLockOnTimerPeriod);
 	}

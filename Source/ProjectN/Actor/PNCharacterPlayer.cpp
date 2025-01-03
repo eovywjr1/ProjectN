@@ -4,15 +4,10 @@
 #include "Actor/PNCharacterPlayer.h"
 
 #include "Component/PNEnhancedInputComponent.h"
-#include "Component/PNPawnComponent.h"
-#include "Component/PNPawnData.h"
 #include "Component/PNPlayerInputComponent.h"
-#include "AbilitySystem/PNAbilitySet.h"
-#include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEquipmentComponent.h"
 #include "Component/PNInventoryComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-#include "Player/PNPlayerState.h"
 
 APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -24,30 +19,6 @@ APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializ
 	PNPlayerInputComponent = CreateDefaultSubobject<UPNPlayerInputComponent>(TEXT("PlayerInputComponent"));
 	CreateDefaultSubobject<UPNInventoryComponent>(TEXT("InventoryComponent"));
 	CreateDefaultSubobject<UPNEquipmentComponent>(TEXT("EquipmentComponent"));
-}
-
-void APNCharacterPlayer::PossessedBy(AController* NewController)
-{
-	Super::PossessedBy(NewController);
-
-	// Todo. 캐릭터 스폰할 때 PawnData, AbilitySystemComponent 초기화해줘야 함
-	if (APNPlayerState* PNPlayerState = GetPlayerState<APNPlayerState>())
-	{
-		UAbilitySystemComponent* ASComponent = PNPlayerState->GetAbilitySystemComponent();
-		PawnComponent->SetAbilitySystemComponent(CastChecked<UPNAbilitySystemComponent>(ASComponent));
-		ASComponent->InitAbilityActorInfo(PNPlayerState, this);
-
-		if (const UPNPawnData* PawnData = PawnComponent->GetPawnData())
-		{
-			for (const UPNAbilitySet* AbilitySet : PawnData->AbilitySets)
-			{
-				if (AbilitySet)
-				{
-					AbilitySet->GiveAbilityToAbilitySystem(ASComponent, this);
-				}
-			}
-		}
-	}
 }
 
 void APNCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

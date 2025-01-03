@@ -76,6 +76,12 @@ APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
 	/////////////////////////////////////////////////////////////////////////////////////////
 
 	PawnComponent = CreateDefaultSubobject<UPNPawnComponent>(TEXT("PNPawnComponent"));
+	UPNAbilitySystemComponent* AbilitySystemComponent = CreateDefaultSubobject<UPNAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	if (PawnComponent && AbilitySystemComponent)
+	{
+		PawnComponent->SetAbilitySystemComponent(AbilitySystemComponent);
+	}
+	
 	CreateDefaultSubobject<UPNStatusActorComponent>(TEXT("StatusActorComponent"));
 }
 

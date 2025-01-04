@@ -31,7 +31,7 @@ private:
 	
 	void UpdateDetectedEnemy();
 	void DetectEnemy(TArray<const AActor*>& InSortedDetectedEnemies) const;
-	bool CheckDetectableEnemy(const AActor* Enemy) const;
+	bool IsDetectableEnemy(const AActor* Enemy) const;
 	void SetDetectedEnemy(const AActor* InDetectedEnemy);
 	
 public:

@@ -49,7 +49,7 @@ void UPNDetectComponent::BeginPlay()
 
 void UPNDetectComponent::UpdateDetectedEnemy()
 {
-	if (CheckDetectableEnemy(DetectedEnemy) == false)
+	if (IsDetectableEnemy(DetectedEnemy) == false)
 	{
 		TArray<const AActor*> InSortedDetectedEnemies;
 		DetectEnemy(InSortedDetectedEnemies);
@@ -74,7 +74,7 @@ void UPNDetectComponent::DetectEnemy(TArray<const AActor*>& InSortedDetectedEnem
 
 	for (const AActor* Actor : OverlappingActors)
 	{
-		if (CheckDetectableEnemy(Actor) == false)
+		if (IsDetectableEnemy(Actor) == false)
 		{
 			continue;
 		}
@@ -102,7 +102,7 @@ void UPNDetectComponent::DetectNextPriorityEnemy()
 		return;
 	}
 
-	if (CheckDetectableEnemy(DetectedEnemy) == false)
+	if (IsDetectableEnemy(DetectedEnemy) == false)
 	{
 		SetDetectedEnemy(InSortedDetectedEnemies[0]);
 		return;
@@ -119,7 +119,7 @@ void UPNDetectComponent::DetectNextPriorityEnemy()
 	}
 }
 
-bool UPNDetectComponent::CheckDetectableEnemy(const AActor* Enemy) const
+bool UPNDetectComponent::IsDetectableEnemy(const AActor* Enemy) const
 {
 	if (IsValid(Enemy) == false)
 	{

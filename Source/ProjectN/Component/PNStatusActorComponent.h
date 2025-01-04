@@ -26,6 +26,8 @@ public:
 	void UnApplyStatusFromEquipment(const EEquipSlotType EquipSlot);
 	
 	void RequestHeal(const float HealAmount);
+	
+	bool IsDead() const;
 
 private:
 	virtual void BeginPlay() override final;
@@ -39,7 +41,8 @@ private:
 	
 	void SetPeaceOrFightStatus(const FGameplayTag StatusTag);
 	
-	void DetectEnemyTimerCallback();
+	void CheckTransitionToPeaceTimerCallback();
+	void OnDetected();
 	
 	void OnActionTagChanged(const FGameplayTag Tag, int32 NewCount);
 	
@@ -47,7 +50,6 @@ private:
 	UPROPERTY()
 	TMap<EEquipSlotType, FActiveGameplayEffectHandle> ActiveEquipStatusEffectHandles;
 	
-	FTimerHandle DetectEnemyTimerHandle;
-	
+	FTimerHandle CheckTransitionToPeaceTimerHandle;
 	float NoEnemyDetectTime = 0.0f;
 };

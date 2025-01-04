@@ -26,7 +26,6 @@ public:
 	void OnInitializedStatus() const;
 
 	void SetDead();
-	FORCEINLINE bool IsDead() const { return bIsDead; };
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
@@ -38,6 +37,4 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> DeadMontage;
-
-	bool bIsDead = false;
 };

@@ -6,6 +6,7 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "Component/PNCharacterMovementComponent.h"
+#include "Component/PNDetectComponent.h"
 #include "Component/PNPawnComponent.h"
 #include "Component/PNStatusActorComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -37,8 +38,6 @@ void APNCharacter::OnInitializedStatus() const
 
 void APNCharacter::SetDead()
 {
-	bIsDead = true;
-	
 	GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 	SetActorEnableCollision(false);
 
@@ -83,6 +82,7 @@ APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
 	}
 	
 	CreateDefaultSubobject<UPNStatusActorComponent>(TEXT("StatusActorComponent"));
+	CreateDefaultSubobject<UPNDetectComponent>(TEXT("DetectActorComponent"));
 }
 
 UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const

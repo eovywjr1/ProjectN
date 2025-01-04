@@ -3,6 +3,7 @@
 
 #include "PNStatusActorComponent.h"
 
+#include "PNDetectComponent.h"
 #include "PNGameplayTags.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPlayerAttributeSet.h"
@@ -10,13 +11,9 @@
 #include "Actor/PNCharacter.h"
 #include "DataTable/EquipmentDataTable.h"
 #include "DataTable/StatusDataTable.h"
-#include "Kismet/KismetSystemLibrary.h"
-#include "Player/PNPlayerController.h"
 #include "Subsystem/PNGameDataSubsystem.h"
 #include "UI/PNHUD.h"
 
-constexpr float CheckDetectEnemyPeriod = 1.0f;
-constexpr float CheckDetectEnemyRadius = 10.0f * static_cast<uint16>(PNDistanceUnit::Meter);
 constexpr float NoDetectionEnemyToPeaceTime = 5.0f;
 
 void UPNStatusActorComponent::ApplyStatusFromEquipment(const FEquipmentDataTable* EquipmentDataTable)
@@ -117,6 +114,17 @@ void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 	AbilitySystemComponent->ApplyGameplayEffectToSelf(HealEffect);
 }
 
+bool UPNStatusActorComponent::IsDead() const
+{
+	APNCharacter* Owner = GetOwner<APNCharacter>();
+	check(Owner);
+
+	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
+	check(AbilitySystemComponent);
+
+	return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Status_Dead);
+}
+
 void UPNStatusActorComponent::BeginPlay()
 {
 	Super::BeginPlay();
@@ -160,7 +168,7 @@ void UPNStatusActorComponent::BeginPlay()
 	FGameplayEventData PayLoad;
 	AbilitySystemComponent->HandleGameplayEvent(FPNGameplayTags::Get().Status_Peace, &PayLoad);
 
-	GetWorld()->GetTimerManager().SetTimer(DetectEnemyTimerHandle, this, &ThisClass::DetectEnemyTimerCallback, CheckDetectEnemyPeriod, true, CheckDetectEnemyPeriod);
+	Owner->FindComponentByClass<UPNDetectComponent>()->OnDetectedDelegate.AddUObject(this, &ThisClass::OnDetected);
 
 	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Attack, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Guard, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
@@ -237,35 +245,34 @@ void UPNStatusActorComponent::SetPeaceOrFightStatus(const FGameplayTag StatusTag
 		AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Status_Peace, 0);
 		AbilitySystemComponent->SetLooseGameplayTagCount(StatusTag, 1);
 	}
-	
-	NoEnemyDetectTime = 0.0f;
+
+	if (StatusTag.MatchesTag(FPNGameplayTags::Get().Status_Fight) && CheckTransitionToPeaceTimerHandle.IsValid() == false)
+	{
+		GetWorld()->GetTimerManager().SetTimer(CheckTransitionToPeaceTimerHandle, this, &ThisClass::CheckTransitionToPeaceTimerCallback, CheckDetectEnemyPeriod, true, CheckDetectEnemyPeriod);
+	}
 }
 
-void UPNStatusActorComponent::DetectEnemyTimerCallback()
+void UPNStatusActorComponent::CheckTransitionToPeaceTimerCallback()
 {
-	TArray<AActor*> ActorsToIgnore;
-	TArray<AActor*> OverlappingActors;
-	const FVector OwnerLocation = GetOwner()->GetActorLocation();
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, CheckDetectEnemyRadius, TArray<TEnumAsByte<EObjectTypeQuery>>(), APawn::StaticClass(), ActorsToIgnore, OverlappingActors);
-
-	if (APNPlayerController* PlayerController = Cast<APNPlayerController>(GetOwner<APawn>()->GetController()))
+	const AActor* DetectedEnemy = GetOwner()->FindComponentByClass<UPNDetectComponent>()->GetDetectedEnemy();
+	if (IsValid(DetectedEnemy))
 	{
-		for (AActor* Actor : OverlappingActors)
+		NoEnemyDetectTime = 0.0f;
+	}
+	else
+	{
+		NoEnemyDetectTime += CheckDetectEnemyPeriod;
+		if (NoDetectionEnemyToPeaceTime <= NoEnemyDetectTime)
 		{
-			if (PlayerController->CheckDetectTargetActor(Actor, CheckDetectEnemyRadius))
-			{
-				SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
-
-				return;
-			}
+			SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Peace);
+			GetWorld()->GetTimerManager().ClearTimer(CheckTransitionToPeaceTimerHandle);
 		}
 	}
+}
 
-	NoEnemyDetectTime += CheckDetectEnemyPeriod;
-	if (NoDetectionEnemyToPeaceTime <= NoEnemyDetectTime)
-	{
-		SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Peace);
-	}
+void UPNStatusActorComponent::OnDetected()
+{
+	SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
 }
 
 void UPNStatusActorComponent::OnActionTagChanged(const FGameplayTag Tag, int32 NewCount)

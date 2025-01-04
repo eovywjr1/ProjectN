@@ -3,6 +3,7 @@
 
 #include "PNTargetMarkerUserWidget.h"
 
+#include "Blueprint/WidgetLayoutLibrary.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
 
@@ -31,33 +32,18 @@ void UPNTargetMarkerUserWidget::NativeTick(const FGeometry& MyGeometry, float In
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 
-	if (GetVisibility() == ESlateVisibility::Visible)
+	AActor* LockOnTargetObject = Cast<AActor>(LockOnTargetObjectKey.ResolveObjectPtr());
+	if (IsValid(LockOnTargetObject))
 	{
-		AActor* LockOnTargetObject = Cast<AActor>(LockOnTargetObjectKey.ResolveObjectPtr());
-		if (IsValid(LockOnTargetObject))
+		if (APlayerController* PlayerController = GetOwningPlayer())
 		{
-			if (APlayerController* PlayerController = GetOwningPlayer())
+			FVector2D ScreenPosition;
+			if (PlayerController->ProjectWorldLocationToScreen(LockOnTargetObject->GetActorLocation(), ScreenPosition))
 			{
-				FVector2D ScreenPosition;
-				if (PlayerController->ProjectWorldLocationToScreen(LockOnTargetObject->GetActorLocation(), ScreenPosition))
+				if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot))
 				{
-					if (UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot))
-					{
-						FVector2D ViewportSize;
-						GEngine->GameViewport->GetViewportSize(ViewportSize);
-
-						FVector2D PanelSize;
-						if (UCanvasPanel* CanvasPanel = Cast<UCanvasPanel>(GetParent()))
-						{
-							PanelSize = CanvasPanel->GetPaintSpaceGeometry().GetLocalSize();
-						}
-
-						const float PanelPerViewportRatioX = PanelSize.X / ViewportSize.X;
-						const float PanelPerViewportRatioY = PanelSize.Y / ViewportSize.Y;
-						const FVector2D PanelPosition(ScreenPosition.X * PanelPerViewportRatioX, ScreenPosition.Y * PanelPerViewportRatioY);
-
-						CanvasSlot->SetPosition(PanelPosition);
-					}
+					ScreenPosition /= UWidgetLayoutLibrary::GetViewportScale(GetWorld());
+					CanvasSlot->SetPosition(ScreenPosition);
 				}
 			}
 		}

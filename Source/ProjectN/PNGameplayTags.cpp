@@ -38,6 +38,7 @@ void FPNGameplayTags::AddAllTags(UGameplayTagsManager& Manager)
 	AddTag(Action_Guard, TEXT("Action.Guard"), TEXT("Action Guard"));
 	AddTag(Action_Attack, TEXT("Action.Attack"), TEXT("Action Attack"));
 	
+	AddTag(GameplayEvent, TEXT("GameplayEvent"), TEXT("GameplayEvent"));
 	AddTag(GameplayEvent_AttackHitCheck, TEXT("GameplayEvent.AttackHitCheck"), TEXT("GameplayEvent AttackHitCheck"));
 }
 

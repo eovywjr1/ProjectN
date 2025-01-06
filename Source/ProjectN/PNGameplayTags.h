@@ -44,6 +44,7 @@ public:
 	FGameplayTag Action_Guard;
 	FGameplayTag Action_Attack;
 	
+	FGameplayTag GameplayEvent;
 	FGameplayTag GameplayEvent_AttackHitCheck;
 	
 private:

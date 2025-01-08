@@ -50,6 +50,8 @@ private:
 	
 	void ExecuteAttack();
 	bool IsEnableExecuteAttack() const;
+	void EnableExecuteAttack() const;
+	void DisableExecuteAttack() const;
 	
 	void AttackHitCheck();
 	

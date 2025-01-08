@@ -150,11 +150,11 @@ void UPNGameplayAbility_Attack::OnGameplayEvent(FGameplayEventData Payload)
 	}
 	else if (Payload.EventTag == FPNGameplayTags::Get().GameplayEvent_EnableComboInput)
 	{
-		GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
+		EnableExecuteAttack();
 	}
 	else if (Payload.EventTag == FPNGameplayTags::Get().GameplayEvent_DisableComboInput)
 	{
-		GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
+		DisableExecuteAttack();
 		GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ClearCombo();
 	}
 }
@@ -215,4 +215,14 @@ void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAb
 bool UPNGameplayAbility_Attack::IsEnableExecuteAttack() const
 {
 	return GetAbilitySystemComponentFromActorInfo()->GetTagCount(FPNGameplayTags::Get().Ability_Attack) <= 0;
+}
+
+void UPNGameplayAbility_Attack::EnableExecuteAttack() const
+{
+	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
+}
+
+void UPNGameplayAbility_Attack::DisableExecuteAttack() const
+{
+	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
 }

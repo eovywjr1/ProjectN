@@ -4,7 +4,6 @@
 #include "AbilitySystem/Ability/PNGameplayAbility_Attack.h"
 #include "AbilitySystemBlueprintLibrary.h"
 #include "PNGameplayTags.h"
-#include "PNLogChannels.h"
 #include "Abilities/Tasks/AbilityTask_PlayMontageAndWait.h"
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
@@ -44,8 +43,6 @@ void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 {
 	Super::ActivateAbility(Handle, ActorInfo, ActivationInfo, TriggerEventData);
 
-	UE_LOG(LogPN, Log, TEXT("Activate Attack"));
-
 	UAbilityTask_WaitGameplayEvent* WaitEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, FPNGameplayTags::Get().GameplayEvent_AttackHitCheck);
 	WaitEventTask->EventReceived.AddDynamic(this, &ThisClass::OnGameplayEvent);
 	WaitEventTask->ReadyForActivation();
@@ -76,8 +73,6 @@ void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Hand
 	Cast<ACharacter>(ActorInfo->AvatarActor.Get())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
 	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
-
-	UE_LOG(LogPN, Log, TEXT("End Attack"));
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -145,8 +140,6 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleteCallback);
 	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnInterruptedCallback);
 	PlayAttackTask->ReadyForActivation();
-
-	UE_LOG(LogPN, Log, TEXT("Execute Attack %s/%s"), *AttackData->AttackTag.ToString(), *BaseAttackAbilityTag.ToString());
 }
 
 void UPNGameplayAbility_Attack::OnGameplayEvent(FGameplayEventData Payload)
@@ -163,7 +156,6 @@ void UPNGameplayAbility_Attack::OnGameplayEvent(FGameplayEventData Payload)
 	{
 		GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
 		GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ClearCombo();
-		UE_LOG(LogPN, Log, TEXT("Clear Combo"));
 	}
 }
 

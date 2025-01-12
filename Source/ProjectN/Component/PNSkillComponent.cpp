@@ -10,17 +10,13 @@
 void UPNSkillComponent::ClearCombo()
 {
 	check(RootComboNode.IsValid());
+
 	CurrentComboNode = RootComboNode;
 }
 
 const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAttackTag)
 {
-	if (CurrentComboNode.IsValid() == false)
-	{
-		// CurrentComboNode는 콤보 노드를 무조건 가리킴 
-		check(false);
-		return nullptr;
-	}
+	check(CurrentComboNode.IsValid());
 
 	TWeakPtr<FComboNode>* NextComboNode = CurrentComboNode.Pin()->Children.Find(NextAttackTag);
 	if (NextComboNode == nullptr || !NextComboNode->IsValid())
@@ -35,12 +31,12 @@ const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAt
 
 bool UPNSkillComponent::IsCurrentCombo(const FGameplayTag AttackTag)
 {
-	if(!CurrentComboNode.IsValid())
+	if (!CurrentComboNode.IsValid())
 	{
 		ClearCombo();
 		return false;
 	}
-	
+
 	const FAttackData* CurrentComboData = CurrentComboNode.Pin()->ComboData;
 	return CurrentComboData && CurrentComboData->AttackTag.MatchesTagExact(AttackTag);
 }
@@ -56,7 +52,7 @@ void UPNSkillComponent::BeginPlay()
 	Super::BeginPlay();
 
 	check(RootComboNode.IsValid());
-	
+
 	if (IAbilitySystemInterface* OwnerAbilitySystemInterface = GetOwner<IAbilitySystemInterface>())
 	{
 		if (const UPNWeaponAttributeSet* WeaponAttributeSet = OwnerAbilitySystemInterface->GetAbilitySystemComponent()->GetSet<UPNWeaponAttributeSet>())
@@ -73,10 +69,8 @@ void UPNSkillComponent::BeginPlay()
 						ChildComboNode = &CurrentNode->Children.Add(AttackData.AttackTag, CreateNode(&AttackData));
 					}
 
-					if (ChildComboNode->IsValid())
-					{
-						CurrentNode = ChildComboNode->Pin().Get();
-					}
+					check(ChildComboNode->IsValid());
+					CurrentNode = ChildComboNode->Pin().Get();
 				}
 			}
 		}

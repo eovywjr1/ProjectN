@@ -3,9 +3,9 @@
 
 #include "Component/PNCharacterMovementComponent.h"
 
-#include "AbilitySystemComponent.h"
-#include "AbilitySystemInterface.h"
 #include "PNGameplayTags.h"
+#include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "Interface/PNAbilitySystemInterface.h"
 
 bool UPNCharacterMovementComponent::IsIdle() const
 {
@@ -17,34 +17,28 @@ bool UPNCharacterMovementComponent::IsIdle() const
 	return true;
 }
 
-void UPNCharacterMovementComponent::BeginPlay()
+UPNCharacterMovementComponent::UPNCharacterMovementComponent()
 {
-	Super::BeginPlay();
-
-	if (IAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	if (IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
 	{
-		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
-		check(AbilitySystemComponent);
-
-		AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Action_Idle);
-		OnActionTagDelegateHandle = AbilitySystemComponent->RegisterGenericGameplayTagEvent().AddUObject(this, &ThisClass::OnUpdateTag);
+		AbilitySystemInterface->OnInitializeAbilitySystemDelegate.AddUObject(this, &ThisClass::OnInitializeAbilitySystem);
 	}
 }
 
 void UPNCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity)
 {
-	if (IAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner()))
+	if (IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner()))
 	{
-		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
-		check(AbilitySystemComponent);
-
-		if (IsIdle())
+		if (UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent())
 		{
-			AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 0);
-		}
-		else
-		{
-			AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 1);
+			if (IsIdle())
+			{
+				AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 0);
+			}
+			else
+			{
+				AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Move, 1);
+			}
 		}
 	}
 }
@@ -53,10 +47,10 @@ void UPNCharacterMovementComponent::OnUpdateTag(const FGameplayTag GameplayTag, 
 {
 	if (GameplayTag.MatchesTag(FPNGameplayTags::Get().Action) && GameplayTag.MatchesTagExact(FPNGameplayTags::Get().Action) == false && GameplayTag.MatchesTagExact(FPNGameplayTags::Get().Action_Idle) == false)
 	{
-		IAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner());
+		IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
 		check(OwnerAbilitySystemInterface);
 
-		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+		UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
 		check(AbilitySystemComponent);
 
 		if (Count > 0)
@@ -68,4 +62,13 @@ void UPNCharacterMovementComponent::OnUpdateTag(const FGameplayTag GameplayTag, 
 			AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Idle, 1);
 		}
 	}
+}
+
+void UPNCharacterMovementComponent::OnInitializeAbilitySystem()
+{
+	IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
+	UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+
+	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Action_Idle);
+	OnActionTagDelegateHandle = AbilitySystemComponent->RegisterGenericGameplayTagEvent().AddUObject(this, &ThisClass::OnUpdateTag);
 }

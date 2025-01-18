@@ -11,16 +11,41 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Actor/PNCharacterPlayer.h"
 #include "Input/PNInputConfig.h"
+#include "InputMappingContext.h"
 #include "Player/PNPlayerController.h"
 
 UPNPlayerInputComponent::UPNPlayerInputComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
-{}
+{
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ControlMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ProjectN/Input/IMC_Control.IMC_Control'"));
+	if (ControlMappingContextRef.Object)
+	{
+		ControlMappingContext = ControlMappingContextRef.Object;
+	}
+
+	static ConstructorHelpers::FObjectFinder<UInputMappingContext> CameraMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ProjectN/Input/IMC_Camera.IMC_Camera'"));
+	if (CameraMappingContextRef.Object)
+	{
+		CameraMappingContext = CameraMappingContextRef.Object;
+	}
+}
 
 void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
 {
-	const UPNPawnComponent* PawnComponent = GetPawn<APawn>()->FindComponentByClass<UPNPawnComponent>();
-	check(PawnComponent);
+	if (PlayerInputComponent == nullptr)
+	{
+		return;
+	}
+
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController->IsLocalController())
+	{
+		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())->AddMappingContext(CameraMappingContext, 0);
+		EnableControlInput(true);
+	}
+
+	APawn* Owner = GetPawn<APawn>();
+	const UPNPawnComponent* PawnComponent = Owner->FindComponentByClass<UPNPawnComponent>();
 	const UPNPawnData* PawnData = PawnComponent->GetPawnData();
 	check(PawnData);
 	const UPNInputConfig* InputConfig = PawnData->InputConfig;
@@ -28,7 +53,6 @@ void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInput
 
 	const FPNGameplayTags& GameplayTags = FPNGameplayTags::Get();
 	UPNEnhancedInputComponent* PNEnhancedInputComponent = Cast<UPNEnhancedInputComponent>(PlayerInputComponent);
-	check(PNEnhancedInputComponent);
 
 	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Move, ETriggerEvent::Triggered, this, &ThisClass::Input_Move);
 	PNEnhancedInputComponent->BindNativeAction(InputConfig, GameplayTags.InputTag_Look, ETriggerEvent::Triggered, this, &ThisClass::Input_Look);
@@ -40,7 +64,18 @@ void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInput
 
 void UPNPlayerInputComponent::EnableControlInput(bool bEnable) const
 {
-	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetController<APlayerController>()->GetLocalPlayer());
+	APlayerController* PlayerController = GetController<APlayerController>();
+	if (PlayerController == nullptr)
+	{
+		return;
+	}
+
+	if (!PlayerController->IsLocalController())
+	{
+		return;
+	}
+
+	UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer());
 
 	if (bEnable)
 	{
@@ -50,14 +85,6 @@ void UPNPlayerInputComponent::EnableControlInput(bool bEnable) const
 	{
 		Subsystem->RemoveMappingContext(ControlMappingContext);
 	}
-}
-
-void UPNPlayerInputComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
-	ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetController<APlayerController>()->GetLocalPlayer())->AddMappingContext(CameraMappingContext, 0);
-	EnableControlInput(true);
 }
 
 void UPNPlayerInputComponent::Input_Move(const FInputActionValue& InputActionValue)

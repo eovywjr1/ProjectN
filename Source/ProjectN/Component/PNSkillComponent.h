@@ -35,7 +35,7 @@ public:
 
 private:
 	UPNSkillComponent();
-	virtual void BeginPlay() override final;
+	void OnInitializeAbilitySystem();
 
 	TWeakPtr<FComboNode> CreateNode(const FAttackData* InComboData);
 

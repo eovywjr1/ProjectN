@@ -97,10 +97,10 @@ void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 		return;
 	}
 
-	IAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IAbilitySystemInterface>(GetOwner());
+	IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
 	check(OwnerAbilitySystemInterface);
 
-	UPNAbilitySystemComponent* AbilitySystemComponent = Cast<UPNAbilitySystemComponent>(OwnerAbilitySystemInterface->GetAbilitySystemComponent());
+	UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
 	check(AbilitySystemComponent);
 
 	UGameplayEffect* HealEffect = NewObject<UGameplayEffect>(this, FName(TEXT("HealEffect")));
@@ -116,26 +116,29 @@ void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 
 bool UPNStatusActorComponent::IsDead() const
 {
-	APNCharacter* Owner = GetOwner<APNCharacter>();
-	check(Owner);
+	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
+	if (UPNAbilitySystemComponent* AbilitySystemComponent = AbilitySystemInterface->GetAbilitySystemComponent())
+	{
+		return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Status_Dead);
+	}
 
-	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
-	check(AbilitySystemComponent);
-
-	return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Status_Dead);
+	return false;
 }
 
-void UPNStatusActorComponent::BeginPlay()
+UPNStatusActorComponent::UPNStatusActorComponent()
 {
-	Super::BeginPlay();
+	if (IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
+	{
+		AbilitySystemInterface->OnInitializeAbilitySystemDelegate.AddUObject(this, &ThisClass::OnInitializeAbilitySystem);
+	}
+}
 
-	APNCharacter* Owner = GetOwner<APNCharacter>();
-	check(Owner);
-
-	UAbilitySystemComponent* AbilitySystemComponent = Owner->GetAbilitySystemComponent();
+void UPNStatusActorComponent::OnInitializeAbilitySystem()
+{
+	UPNAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent();
 	check(AbilitySystemComponent);
 
-	// Todo. 임시로 생성자에서 설정, 추후 무기 장착/획득할 때 넣어야 함
+	// Todo. 추후 무기 장착/획득할 때 넣어야 함
 	if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
 	{
 		if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
@@ -144,8 +147,10 @@ void UPNStatusActorComponent::BeginPlay()
 		}
 	}
 
+	AActor* Owner = GetOwner();
+	APNCharacter* OwnerCast = Cast<APNCharacter>(Owner);
 	// Todo. 데이터테이블과 연동해야 함	
-	if (Owner->GetController()->IsPlayerController())
+	if (OwnerCast && OwnerCast->GetController() && OwnerCast->GetController()->IsPlayerController())
 	{
 		AbilitySystemComponent->InitStats(UPNPlayerAttributeSet::StaticClass(), nullptr);
 	}
@@ -159,8 +164,9 @@ void UPNStatusActorComponent::BeginPlay()
 	PawnAttributeSet->OnDamagedDelegate.AddUObject(this, &ThisClass::OnDamaged);
 	PawnAttributeSet->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
 
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
+	if (OwnerCast && OwnerCast->GetController() && OwnerCast->GetController()->IsLocalPlayerController())
 	{
+		APlayerController* PlayerController = Cast<APlayerController>(OwnerCast->GetController());
 		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
 	}
 
@@ -173,7 +179,11 @@ void UPNStatusActorComponent::BeginPlay()
 	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Attack, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
 	AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Guard, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
 
-	Owner->OnInitializedStatus();
+	// Todo. 추후 OnInitializedStatus를 Interface로 선언해야 할수도?
+	if (OwnerCast)
+	{
+		OwnerCast->OnInitializedStatus();
+	}
 }
 
 FGameplayAttribute UPNStatusActorComponent::GetStatusAttribute(const EStatusType StatusType) const
@@ -236,7 +246,7 @@ void UPNStatusActorComponent::SetPeaceOrFightStatus(const FGameplayTag StatusTag
 		return;
 	}
 
-	if (IAbilitySystemInterface* OwnerAbilitySystemInterface = GetOwner<IAbilitySystemInterface>())
+	if (IPNAbilitySystemInterface* OwnerAbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
 	{
 		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
 		check(AbilitySystemComponent);

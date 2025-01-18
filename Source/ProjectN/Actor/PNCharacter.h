@@ -3,19 +3,19 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemInterface.h"
 #include "GameFramework/Character.h"
+#include "Interface/PNAbilitySystemInterface.h"
 #include "PNCharacter.generated.h"
 
 class UPNPawnComponent;
 
 UCLASS(config=Game)
-class APNCharacter : public ACharacter, public IAbilitySystemInterface
+class APNCharacter : public ACharacter, public IPNAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
+	virtual UPNAbilitySystemComponent* GetAbilitySystemComponent() const override final;
 
 	bool IsPlayer() const;
 	bool IsRun() const;

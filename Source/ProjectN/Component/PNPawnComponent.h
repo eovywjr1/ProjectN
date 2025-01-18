@@ -7,6 +7,14 @@
 
 #include "PNPawnComponent.generated.h"
 
+UENUM()
+enum class EActorType : uint8
+{
+	NPC,
+	Player,
+	MAX
+};
+
 /**
  * 
  */
@@ -25,15 +33,18 @@ private:
 public:
 	const UPNPawnData* GetPawnData() const { return PawnData; }
 	UPNAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
-	void SetAbilitySystemComponent(UPNAbilitySystemComponent* InAbilitySystemComponent) { AbilitySystemComponent = InAbilitySystemComponent; }
+	void InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor);
 	
 private:
-	virtual void BeginPlay() override final;
+	virtual void InitializeComponent() override final;
+	
+public:
+	EActorType ActorType = EActorType::MAX;
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = "Pawn")
-	TObjectPtr<const UPNPawnData> PawnData;
-
+	TObjectPtr<const UPNPawnData> PawnData = nullptr;
+	
 	UPROPERTY()
-	TObjectPtr<UPNAbilitySystemComponent> AbilitySystemComponent;
+	TObjectPtr<UPNAbilitySystemComponent> AbilitySystemComponent = nullptr;
 };

@@ -6,35 +6,59 @@
 #include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "Interface/PNAbilitySystemInterface.h"
 
 UPNPawnComponent::UPNPawnComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	PrimaryComponentTick.bCanEverTick = false;
-
-	PawnData = nullptr;
-	AbilitySystemComponent = nullptr;
 }
 
-void UPNPawnComponent::BeginPlay()
+void UPNPawnComponent::InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor)
 {
-	Super::BeginPlay();
-
 	if (AbilitySystemComponent)
 	{
-		AActor* Owner = GetOwner();
-		AbilitySystemComponent->InitAbilityActorInfo(Owner, Owner);
+		return;
+	}
 
-		if (PawnData)
+	if (ActorType < EActorType::Player)
+	{
+		InAbilitySystemComponent = NewObject<UPNAbilitySystemComponent>(InOwnerActor);
+	}
+
+	if (!InAbilitySystemComponent->IsRegistered())
+	{
+		InAbilitySystemComponent->RegisterComponent();
+	}
+
+	AbilitySystemComponent = InAbilitySystemComponent;
+	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, GetOwner());
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	
+	if (PawnData)
+	{
+		for (const UPNAbilitySet* AbilitySet : PawnData->AbilitySets)
 		{
-			for (const UPNAbilitySet* AbilitySet : PawnData->AbilitySets)
+			if (AbilitySet)
 			{
-				if (AbilitySet)
-				{
-					AbilitySet->GiveAbilityToAbilitySystem(AbilitySystemComponent, this);
-				}
+				AbilitySet->GiveAbilityToAbilitySystem(AbilitySystemComponent, this);
 			}
 		}
+	}
+
+	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
+	check(AbilitySystemInterface);
+	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
+}
+
+void UPNPawnComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	if (ActorType < EActorType::Player)
+	{
+		InitializeAbilitySystem(nullptr, GetOwner());
 	}
 }

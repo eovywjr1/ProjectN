@@ -3,30 +3,69 @@
 
 #include "Actor/PNCharacterPlayer.h"
 
+#include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEnhancedInputComponent.h"
 #include "Component/PNPlayerInputComponent.h"
 #include "Component/PNEquipmentComponent.h"
 #include "Component/PNInventoryComponent.h"
+#include "Component/PNPawnComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Player/PNPlayerState.h"
 
-APNCharacterPlayer::APNCharacterPlayer(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer)
+APNCharacterPlayer::APNCharacterPlayer()
 {
 	bUseControllerRotationYaw = true;
 
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
-	PNPlayerInputComponent = CreateDefaultSubobject<UPNPlayerInputComponent>(TEXT("PlayerInputComponent"));
-	CreateDefaultSubobject<UPNInventoryComponent>(TEXT("InventoryComponent"));
 	CreateDefaultSubobject<UPNEquipmentComponent>(TEXT("EquipmentComponent"));
+	PawnComponent->ActorType = EActorType::Player;
+}
+
+void APNCharacterPlayer::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	InitialComponents();
+}
+
+void APNCharacterPlayer::OnRep_PlayerState()
+{
+	Super::OnRep_PlayerState();
+
+	InitialComponents();
 }
 
 void APNCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 
-	check(PNPlayerInputComponent);
-	PNPlayerInputComponent->InitializePlayerInput(PlayerInputComponent);
+	if (PNPlayerInputComponent)
+	{
+		PNPlayerInputComponent->InitializePlayerInput(InputComponent);
+	}
+}
+
+void APNCharacterPlayer::InitialComponents()
+{
+	APNPlayerState* PlayerStateCast = GetPlayerState<APNPlayerState>();
+	check(PlayerStateCast);
+
+	UPNAbilitySystemComponent* AbilitySystemComponent = PlayerStateCast->GetAbilitySystemComponent();
+	PawnComponent->InitializeAbilitySystem(AbilitySystemComponent, PlayerStateCast);
+
+	if (IsLocallyControlled())
+	{
+		PNPlayerInputComponent = NewObject<UPNPlayerInputComponent>(this, TEXT("PlayerInputComponent"));
+		PNPlayerInputComponent->RegisterComponent();
+		
+		// PlayerState 리플리케이션이 늦을 경우 InputComponent가 먼저 생생하는 상황 대비하여 초기화
+		// 보통은 PlayerInputComponent가 먼저 생성되므로 InputComponent가 nullptr
+		PNPlayerInputComponent->InitializePlayerInput(InputComponent);
+
+		UPNInventoryComponent* InventoryComponent = NewObject<UPNInventoryComponent>(this, TEXT("InventoryComponent"));
+		InventoryComponent->RegisterComponent();
+	}
 }
 
 void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)

@@ -30,7 +30,9 @@ public:
 	bool IsDead() const;
 
 private:
-	virtual void BeginPlay() override final;
+	UPNStatusActorComponent();
+	
+	void OnInitializeAbilitySystem();
 	
 	FGameplayAttribute GetStatusAttribute(const EStatusType StatusType) const;
 	EStatusType GetStatusType(const FGameplayAttribute Attribute) const;

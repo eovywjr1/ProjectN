@@ -11,6 +11,8 @@
  * 
  */
 
+class UInputMappingContext;
+
 struct FGameplayTag;
 struct FInputActionValue;
 
@@ -21,8 +23,6 @@ class PROJECTN_API UPNPlayerInputComponent : public UPawnComponent
 
 private:
 	UPNPlayerInputComponent(const FObjectInitializer& ObjectInitializer);
-
-	virtual void BeginPlay() override final;
 	
 public:
 	void InitializePlayerInput(UInputComponent* PlayerInputComponent);
@@ -40,10 +40,10 @@ private:
 	
 private:
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-	TObjectPtr<class UInputMappingContext> ControlMappingContext;
+	TObjectPtr<UInputMappingContext> ControlMappingContext;
 	
 	UPROPERTY(EditDefaultsOnly, Category = Input)
-	TObjectPtr<class UInputMappingContext> CameraMappingContext;
+	TObjectPtr<UInputMappingContext> CameraMappingContext;
 	
 	FVector2D LastMovementInput = FVector2D::ZeroVector;
 	

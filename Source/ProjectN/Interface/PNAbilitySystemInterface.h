@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "UObject/Interface.h"
 #include "PNAbilitySystemInterface.generated.h"
 
@@ -20,13 +21,10 @@ class UPNAbilitySystemInterface : public UInterface
 /**
  * 
  */
-class PROJECTN_API IPNAbilitySystemInterface
+class PROJECTN_API IPNAbilitySystemInterface : public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
-public:
-	virtual UPNAbilitySystemComponent* GetAbilitySystemComponent() const = 0;
-	
 public:
 	FOnInitializeAbilitySystemDelegate OnInitializeAbilitySystemDelegate;
 };

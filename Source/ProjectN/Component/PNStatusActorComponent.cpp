@@ -100,7 +100,7 @@ void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 	IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
 	check(OwnerAbilitySystemInterface);
 
-	UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+	UPNAbilitySystemComponent* AbilitySystemComponent = Cast<UPNAbilitySystemComponent>(OwnerAbilitySystemInterface->GetAbilitySystemComponent());
 	check(AbilitySystemComponent);
 
 	UGameplayEffect* HealEffect = NewObject<UGameplayEffect>(this, FName(TEXT("HealEffect")));
@@ -117,7 +117,7 @@ void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 bool UPNStatusActorComponent::IsDead() const
 {
 	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
-	if (UPNAbilitySystemComponent* AbilitySystemComponent = AbilitySystemInterface->GetAbilitySystemComponent())
+	if (UAbilitySystemComponent* AbilitySystemComponent = AbilitySystemInterface->GetAbilitySystemComponent())
 	{
 		return AbilitySystemComponent->HasMatchingGameplayTag(FPNGameplayTags::Get().Status_Dead);
 	}
@@ -135,7 +135,7 @@ UPNStatusActorComponent::UPNStatusActorComponent()
 
 void UPNStatusActorComponent::OnInitializeAbilitySystem()
 {
-	UPNAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent();
+	UAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent();
 	check(AbilitySystemComponent);
 
 	// Todo. 추후 무기 장착/획득할 때 넣어야 함

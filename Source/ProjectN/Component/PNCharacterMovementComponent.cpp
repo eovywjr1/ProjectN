@@ -3,8 +3,8 @@
 
 #include "Component/PNCharacterMovementComponent.h"
 
+#include "AbilitySystemComponent.h"
 #include "PNGameplayTags.h"
-#include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Interface/PNAbilitySystemInterface.h"
 
 bool UPNCharacterMovementComponent::IsIdle() const
@@ -29,7 +29,7 @@ void UPNCharacterMovementComponent::OnMovementUpdated(float DeltaSeconds, const 
 {
 	if (IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner()))
 	{
-		if (UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent())
+		if (UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent())
 		{
 			if (IsIdle())
 			{
@@ -50,7 +50,7 @@ void UPNCharacterMovementComponent::OnUpdateTag(const FGameplayTag GameplayTag, 
 		IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
 		check(OwnerAbilitySystemInterface);
 
-		UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+		UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
 		check(AbilitySystemComponent);
 
 		if (Count > 0)
@@ -67,7 +67,7 @@ void UPNCharacterMovementComponent::OnUpdateTag(const FGameplayTag GameplayTag, 
 void UPNCharacterMovementComponent::OnInitializeAbilitySystem()
 {
 	IPNAbilitySystemInterface* OwnerAbilitySystemInterface = Cast<IPNAbilitySystemInterface>(GetOwner());
-	UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
+	UAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetAbilitySystemComponent();
 
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Action_Idle);
 	OnActionTagDelegateHandle = AbilitySystemComponent->RegisterGenericGameplayTagEvent().AddUObject(this, &ThisClass::OnUpdateTag);

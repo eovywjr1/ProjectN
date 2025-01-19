@@ -13,7 +13,7 @@ DECLARE_MULTICAST_DELEGATE(FOnInitializeAbilitySystemDelegate)
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
-class UPNAbilitySystemInterface : public UInterface
+class UPNAbilitySystemInterface : public UAbilitySystemInterface
 {
 	GENERATED_BODY()
 };

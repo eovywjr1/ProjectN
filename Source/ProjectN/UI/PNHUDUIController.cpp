@@ -4,6 +4,7 @@
 #include "UI/PNHUDUIController.h"
 
 #include "PNHUD.h"
+#include "PNInteractionUserWidget.h"
 #include "PNTargetMarkerUserWidget.h"
 
 void UPNHUDUIController::NativeOnInitialized()
@@ -15,6 +16,9 @@ void UPNHUDUIController::NativeOnInitialized()
 
 	HUD->OnSetLockOnTargetDelegate.AddUObject(this, &ThisClass::SetLockOnTarget);
 	HUD->OnDeactivatedLockOnDelegate.AddUObject(this, &ThisClass::OnDeactivatedLockOn);
+	
+	HUD->OnDetectedInteractableActorDelegate.AddUObject(InteractionWidget, &UPNInteractionUserWidget::OnDetectedInteractableActor);
+	HUD->OnUnDetectedInteractableActorDelegate.AddUObject(InteractionWidget, &UPNInteractionUserWidget::OnUnDetectedInteractableActor);
 }
 
 void UPNHUDUIController::NativeConstruct()

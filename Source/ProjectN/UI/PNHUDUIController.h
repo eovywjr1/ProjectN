@@ -6,6 +6,7 @@
 #include "APNUIController.h"
 #include "PNHUDUIController.generated.h"
 
+class UPNInteractionUserWidget;
 class UPNTargetMarkerUserWidget;
 
 /**
@@ -26,4 +27,7 @@ private:
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UPNTargetMarkerUserWidget> LockOnTargetMarkerWidget;
+	
+	UPROPERTY(meta = (BindWidget))
+	TObjectPtr<UPNInteractionUserWidget> InteractionWidget;
 };

@@ -36,8 +36,8 @@ void UPNPawnComponent::InitializeAbilitySystem(UPNAbilitySystemComponent* InAbil
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, GetOwner());
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-	
-	if (PawnData)
+
+	if (HasAuthority() && PawnData)
 	{
 		for (const UPNAbilitySet* AbilitySet : PawnData->AbilitySets)
 		{

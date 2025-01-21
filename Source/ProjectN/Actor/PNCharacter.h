@@ -15,13 +15,16 @@ class APNCharacter : public ACharacter, public IPNAbilitySystemInterface
 	GENERATED_BODY()
 
 public:
-	virtual UPNAbilitySystemComponent* GetAbilitySystemComponent() const override final;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override final;
 
 	bool IsPlayer() const;
 	bool IsRun() const;
 
 	void SetMaxWalkSpeed(const float InMaxSpeed);
 	float GetMaxWalkSpeed() const;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetMaxWalkSpeed(const float InMaxSpeed);
 
 	void OnInitializedStatus() const;
 

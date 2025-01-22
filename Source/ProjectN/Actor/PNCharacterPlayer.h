@@ -24,6 +24,7 @@ public:
 private:
 	APNCharacterPlayer();
 	
+	virtual void Tick(float DeltaSeconds) override final;
 	virtual void PossessedBy(AController* NewController) override final;
 	virtual void OnRep_PlayerState() override final;
 	
@@ -34,4 +35,6 @@ private:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UPNPlayerInputComponent> PNPlayerInputComponent;
+	
+	float RunTargetRotationYaw = 0.0f;
 };

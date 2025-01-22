@@ -4,7 +4,7 @@
 #include "Player/PNPlayerState.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 
-UPNAbilitySystemComponent* APNPlayerState::GetAbilitySystemComponent() const
+UAbilitySystemComponent* APNPlayerState::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;
 }

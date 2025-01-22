@@ -14,12 +14,41 @@
 
 APNCharacterPlayer::APNCharacterPlayer()
 {
-	bUseControllerRotationYaw = true;
+	bUseControllerRotationYaw = false;
+	GetCharacterMovement()->bOrientRotationToMovement = false;
 
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
 	CreateDefaultSubobject<UPNEquipmentComponent>(TEXT("EquipmentComponent"));
 	PawnComponent->ActorType = EActorType::Player;
+
+	PrimaryActorTick.bCanEverTick = true;
+}
+
+void APNCharacterPlayer::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+
+	float TargetRotationYaw = Controller->GetControlRotation().Yaw;
+	FRotator CurrentRotation = GetActorRotation();
+	
+	if (!IsRun())
+	{
+		RunTargetRotationYaw = 0.0f;
+	}
+
+	if (RunTargetRotationYaw == 0.0f)
+	{	
+		CurrentRotation.Yaw = TargetRotationYaw;
+	}
+	else
+	{
+		TargetRotationYaw += RunTargetRotationYaw;
+		CurrentRotation.Yaw = TargetRotationYaw;
+	}
+	
+	const FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), CurrentRotation, DeltaSeconds, 10.0f);
+	SetActorRotation(NewRotation);
 }
 
 void APNCharacterPlayer::PossessedBy(AController* NewController)
@@ -51,14 +80,14 @@ void APNCharacterPlayer::InitialComponents()
 	APNPlayerState* PlayerStateCast = GetPlayerState<APNPlayerState>();
 	check(PlayerStateCast);
 
-	UPNAbilitySystemComponent* AbilitySystemComponent = PlayerStateCast->GetAbilitySystemComponent();
-	PawnComponent->InitializeAbilitySystem(AbilitySystemComponent, PlayerStateCast);
+	UAbilitySystemComponent* AbilitySystemComponent = PlayerStateCast->GetAbilitySystemComponent();
+	PawnComponent->InitializeAbilitySystem(Cast<UPNAbilitySystemComponent>(AbilitySystemComponent), PlayerStateCast);
 
 	if (IsLocallyControlled())
 	{
 		PNPlayerInputComponent = NewObject<UPNPlayerInputComponent>(this, TEXT("PlayerInputComponent"));
 		PNPlayerInputComponent->RegisterComponent();
-		
+
 		// PlayerState 리플리케이션이 늦을 경우 InputComponent가 먼저 생생하는 상황 대비하여 초기화
 		// 보통은 PlayerInputComponent가 먼저 생성되므로 InputComponent가 nullptr
 		PNPlayerInputComponent->InitializePlayerInput(InputComponent);
@@ -72,13 +101,13 @@ void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)
 {
 	check(Controller);
 
-	bUseControllerRotationYaw = true;
-	GetCharacterMovement()->bOrientRotationToMovement = false;
-
 	if (IsRun() && MovementVector.Y >= 0.0f && FMath::Abs(MovementVector.X) > 0.0f)
 	{
-		bUseControllerRotationYaw = false;
-		GetCharacterMovement()->bOrientRotationToMovement = true;
+		RunTargetRotationYaw = FMath::RadiansToDegrees(FMath::Atan2(MovementVector.X, MovementVector.Y));
+	}
+	else
+	{
+		RunTargetRotationYaw = 0.0f;
 	}
 
 	const FRotator Rotation = Controller->GetControlRotation();

@@ -18,7 +18,7 @@ class PROJECTN_API APNPlayerState : public APlayerState, public IPNAbilitySystem
 	GENERATED_BODY()
 	
 public:
-	FORCEINLINE virtual UPNAbilitySystemComponent* GetAbilitySystemComponent() const;
+	FORCEINLINE virtual UAbilitySystemComponent* GetAbilitySystemComponent() const;
 	
 private:
 	APNPlayerState();

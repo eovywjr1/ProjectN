@@ -28,26 +28,21 @@ APNCharacterPlayer::APNCharacterPlayer()
 void APNCharacterPlayer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
-
-	float TargetRotationYaw = Controller->GetControlRotation().Yaw;
-	FRotator CurrentRotation = GetActorRotation();
 	
 	if (!IsRun())
 	{
 		RunTargetRotationYaw = 0.0f;
 	}
+	
+	FRotator TargetRotation = GetActorRotation();
+	TargetRotation.Yaw = Controller->GetControlRotation().Yaw;
 
-	if (RunTargetRotationYaw == 0.0f)
-	{	
-		CurrentRotation.Yaw = TargetRotationYaw;
-	}
-	else
+	if (RunTargetRotationYaw != 0.0f)
 	{
-		TargetRotationYaw += RunTargetRotationYaw;
-		CurrentRotation.Yaw = TargetRotationYaw;
+		TargetRotation.Yaw += RunTargetRotationYaw;
 	}
 	
-	const FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), CurrentRotation, DeltaSeconds, 10.0f);
+	const FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaSeconds, 10.0f);
 	SetActorRotation(NewRotation);
 }
 

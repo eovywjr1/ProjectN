@@ -17,8 +17,10 @@ bool UPNCharacterMovementComponent::IsIdle() const
 	return true;
 }
 
-UPNCharacterMovementComponent::UPNCharacterMovementComponent()
+void UPNCharacterMovementComponent::InitializeComponent()
 {
+	Super::InitializeComponent();
+	
 	if (IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
 	{
 		AbilitySystemInterface->OnInitializeAbilitySystemDelegate.AddUObject(this, &ThisClass::OnInitializeAbilitySystem);

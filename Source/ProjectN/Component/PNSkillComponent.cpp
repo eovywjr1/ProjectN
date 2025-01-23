@@ -43,36 +43,33 @@ bool UPNSkillComponent::IsCurrentCombo(const FGameplayTag AttackTag)
 
 UPNSkillComponent::UPNSkillComponent()
 {
+	bWantsInitializeComponent = true;
+	
 	RootComboNode = CreateNode(nullptr);
 	CurrentComboNode = RootComboNode;
-
-	if (IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
-	{
-		AbilitySystemInterface->OnInitializeAbilitySystemDelegate.AddUObject(this, &ThisClass::OnInitializeAbilitySystem);
-	}
 }
 
-void UPNSkillComponent::OnInitializeAbilitySystem()
+void UPNSkillComponent::InitComboTree()
 {
 	check(RootComboNode.IsValid());
 
-	if (const UPNWeaponAttributeSet* WeaponAttributeSet = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent()->GetSet<UPNWeaponAttributeSet>())
+	const UPNWeaponAttributeSet* WeaponAttributeSet = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent()->GetSet<UPNWeaponAttributeSet>();
+	check(WeaponAttributeSet);
+
+	for (TArray<FComboData>::TConstIterator Iter = WeaponAttributeSet->GetComboDatas(); Iter; ++Iter)
 	{
-		for (TArray<FComboData>::TConstIterator Iter = WeaponAttributeSet->GetComboDatas(); Iter; ++Iter)
+		FComboNode* CurrentNode = RootComboNode.Pin().Get();
+
+		for (const FAttackData& AttackData : Iter->ComboAttackDatas)
 		{
-			FComboNode* CurrentNode = RootComboNode.Pin().Get();
-
-			for (const FAttackData& AttackData : Iter->ComboAttackDatas)
+			TWeakPtr<FComboNode>* ChildComboNode = CurrentNode->Children.Find(AttackData.AttackTag);
+			if (ChildComboNode == nullptr)
 			{
-				TWeakPtr<FComboNode>* ChildComboNode = CurrentNode->Children.Find(AttackData.AttackTag);
-				if (ChildComboNode == nullptr)
-				{
-					ChildComboNode = &CurrentNode->Children.Add(AttackData.AttackTag, CreateNode(&AttackData));
-				}
-
-				check(ChildComboNode->IsValid());
-				CurrentNode = ChildComboNode->Pin().Get();
+				ChildComboNode = &CurrentNode->Children.Add(AttackData.AttackTag, CreateNode(&AttackData));
 			}
+
+			check(ChildComboNode->IsValid());
+			CurrentNode = ChildComboNode->Pin().Get();
 		}
 	}
 }

@@ -7,7 +7,6 @@
 #include "PNGameplayTags.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPlayerAttributeSet.h"
-#include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 #include "Actor/PNCharacter.h"
 #include "DataTable/EquipmentDataTable.h"
 #include "DataTable/StatusDataTable.h"
@@ -119,6 +118,13 @@ bool UPNStatusActorComponent::IsDead() const
 
 UPNStatusActorComponent::UPNStatusActorComponent()
 {
+	bWantsInitializeComponent = true;
+}
+
+void UPNStatusActorComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	
 	if (IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
 	{
 		AbilitySystemInterface->OnInitializeAbilitySystemDelegate.AddUObject(this, &ThisClass::OnInitializeAbilitySystem);
@@ -129,15 +135,6 @@ void UPNStatusActorComponent::OnInitializeAbilitySystem()
 {
 	UAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent();
 	check(AbilitySystemComponent);
-
-	// Todo. 추후 무기 장착/획득할 때 넣어야 함
-	if (TSubclassOf<UPNWeaponAttributeSet> WeaponAttributeSetClass = LoadClass<UPNWeaponAttributeSet>(this, TEXT("/Script/Engine.Blueprint'/Game/ProjectN/Blueprints/AttributeSet/BP_BasicWeaponAttributeSet.BP_BasicWeaponAttributeSet_C'")))
-	{
-		if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
-		{
-			AbilitySystemComponent->AddSpawnedAttribute(WeaponAttributeSet);
-		}
-	}
 
 	AActor* Owner = GetOwner();
 	APNCharacter* OwnerCast = Cast<APNCharacter>(Owner);

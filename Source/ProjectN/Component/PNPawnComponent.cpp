@@ -53,9 +53,9 @@ void UPNPawnComponent::InitializeAbilitySystem(UPNAbilitySystemComponent* InAbil
 	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
 }
 
-void UPNPawnComponent::InitializeComponent()
+void UPNPawnComponent::BeginPlay()
 {
-	Super::InitializeComponent();
+	Super::BeginPlay();
 
 	if (ActorType < EActorType::Player)
 	{

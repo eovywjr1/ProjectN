@@ -31,15 +31,18 @@ void UPNPlayerStatusUserWidget::NativeOnInitialized()
 void UPNPlayerStatusUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
-	
+
 	IAbilitySystemInterface* TargetAbilitySystemInterface = Cast<IAbilitySystemInterface>(TargetObjectKey.ResolveObjectPtr());
 	if (TargetAbilitySystemInterface == nullptr)
 	{
 		return;
 	}
-	
+
 	UAbilitySystemComponent* AbilitySystemComponent = TargetAbilitySystemInterface->GetAbilitySystemComponent();
-	check(AbilitySystemComponent);
+	if (AbilitySystemComponent == nullptr)
+	{
+		return;
+	}
 
 	const UPNPawnAttributeSet* AttributeSet = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>();
 	if (AttributeSet == nullptr)

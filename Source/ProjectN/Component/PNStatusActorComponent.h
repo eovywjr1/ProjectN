@@ -31,6 +31,7 @@ public:
 
 private:
 	UPNStatusActorComponent();
+	virtual void InitializeComponent() override final;
 	
 	void OnInitializeAbilitySystem();
 	

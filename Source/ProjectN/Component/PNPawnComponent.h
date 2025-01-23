@@ -36,7 +36,7 @@ public:
 	void InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor);
 	
 private:
-	virtual void InitializeComponent() override final;
+	virtual void BeginPlay() override final;
 	
 public:
 	EActorType ActorType = EActorType::MAX;

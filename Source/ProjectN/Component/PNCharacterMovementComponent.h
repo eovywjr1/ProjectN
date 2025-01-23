@@ -19,7 +19,7 @@ public:
 	bool IsIdle() const;
 
 private:
-	UPNCharacterMovementComponent();
+	virtual void InitializeComponent() override final;
 
 	virtual void OnMovementUpdated(float DeltaSeconds, const FVector& OldLocation, const FVector& OldVelocity) override final;
 	void OnUpdateTag(const FGameplayTag GameplayTag, int32 Count) const;

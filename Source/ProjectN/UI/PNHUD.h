@@ -50,9 +50,6 @@ class PROJECTN_API APNHUD : public AHUD
 	GENERATED_BODY()
 	
 public:
-	GameEvent_OnStatusChangedDelegate OnStatusChangedDelegate;
-	GameEvent_OnInitStatusDelegate OnInitStatusDelegate;
-	
 	GameEvent_OnSetLockOnTargetDelegate OnSetLockOnTargetDelegate;
 	GameEvent_OnDeactivatedLockOnDelegate OnDeactivatedLockOnDelegate;
 

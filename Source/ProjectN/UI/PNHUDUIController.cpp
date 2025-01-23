@@ -5,6 +5,7 @@
 
 #include "PNHUD.h"
 #include "PNInteractionUserWidget.h"
+#include "PNPlayerStatusUserWidget.h"
 #include "PNTargetMarkerUserWidget.h"
 
 void UPNHUDUIController::NativeOnInitialized()
@@ -27,6 +28,8 @@ void UPNHUDUIController::NativeConstruct()
 	
 	// Todo. 임시 추후 월드 진입할 때로 변경
 	SetVisibility(ESlateVisibility::Visible);
+	
+	PlayerHpWidget->SetTargetObject(GetOwningPlayerPawn());
 }
 
 void UPNHUDUIController::SetLockOnTarget(FObjectKey LockOnTargetObjectKey)

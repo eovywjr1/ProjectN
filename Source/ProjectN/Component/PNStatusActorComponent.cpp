@@ -82,14 +82,6 @@ void UPNStatusActorComponent::UnApplyStatusFromEquipment(const EEquipSlotType Eq
 	ActiveEquipStatusEffectHandles.Remove(EquipSlot);
 }
 
-void UPNStatusActorComponent::OnPawnAttributeSetChanged(FGameplayAttribute Attribute)
-{
-	if (APlayerController* PlayerController = GetWorld()->GetFirstPlayerController())
-	{
-		Cast<APNHUD>(PlayerController->GetHUD())->OnStatusChangedDelegate.Broadcast(FObjectKey(GetOwner()), GetStatusType(Attribute));
-	}
-}
-
 void UPNStatusActorComponent::RequestHeal(const float HealAmount)
 {
 	if (HealAmount <= 0.0f)
@@ -162,13 +154,6 @@ void UPNStatusActorComponent::OnInitializeAbilitySystem()
 	const UPNPawnAttributeSet* PawnAttributeSet = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>();
 	PawnAttributeSet->OnOutOfHp.AddUObject(this, &ThisClass::OnOutOfHp);
 	PawnAttributeSet->OnDamagedDelegate.AddUObject(this, &ThisClass::OnDamaged);
-	PawnAttributeSet->OnChangedPawnAttributeDelegate.AddUObject(this, &ThisClass::OnPawnAttributeSetChanged);
-
-	if (OwnerCast && OwnerCast->GetController() && OwnerCast->GetController()->IsLocalPlayerController())
-	{
-		APlayerController* PlayerController = Cast<APlayerController>(OwnerCast->GetController());
-		Cast<APNHUD>(PlayerController->GetHUD())->OnInitStatusDelegate.Broadcast(FObjectKey(GetOwner()));
-	}
 
 	AbilitySystemComponent->AddLooseGameplayTag(FPNGameplayTags::Get().Status_Peace);
 	FGameplayEventData PayLoad;

@@ -17,9 +17,6 @@ void UPNPlayerStatusUserWidget::NativeOnInitialized()
 	APNHUD* HUD = Cast<APNHUD>(GetOwningPlayer()->GetHUD());
 	check(HUD);
 
-	HUD->OnStatusChangedDelegate.AddUObject(this, &ThisClass::OnStatusChanged);
-	HUD->OnInitStatusDelegate.AddUObject(this, &ThisClass::OnInitStatus);
-
 	if (StatusType == EStatusType::Hp)
 	{
 		ProgressBar = Cast<UProgressBar>(GetWidgetFromName("StatusProgressBar"));
@@ -31,34 +28,21 @@ void UPNPlayerStatusUserWidget::NativeOnInitialized()
 	}
 }
 
-void UPNPlayerStatusUserWidget::OnStatusChanged(const FObjectKey TargetObjectKey, const EStatusType InStatusType)
+void UPNPlayerStatusUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
-	if (StatusType != InStatusType)
-	{
-		return;
-	}
-
-	UpdateStatus(TargetObjectKey);
-}
-
-void UPNPlayerStatusUserWidget::OnInitStatus(const FObjectKey TargetObjectKey)
-{
-	UpdateStatus(TargetObjectKey);
-}
-
-void UPNPlayerStatusUserWidget::UpdateStatus(const FObjectKey TargetObjectKey) const
-{
-	APNCharacter* TargetActor = Cast<APNCharacter>(TargetObjectKey.ResolveObjectPtr());
-	if (TargetActor == nullptr || TargetActor->IsPlayer() == false)
+	Super::NativeTick(MyGeometry, InDeltaTime);
+	
+	IAbilitySystemInterface* TargetAbilitySystemInterface = Cast<IAbilitySystemInterface>(TargetObjectKey.ResolveObjectPtr());
+	if (TargetAbilitySystemInterface == nullptr)
 	{
 		return;
 	}
 	
-	UAbilitySystemComponent* AbilitySystemComponent = TargetActor->GetAbilitySystemComponent();
+	UAbilitySystemComponent* AbilitySystemComponent = TargetAbilitySystemInterface->GetAbilitySystemComponent();
 	check(AbilitySystemComponent);
 
-	const UPNPlayerAttributeSet* PlayerAttributeSet = AbilitySystemComponent->GetSet<UPNPlayerAttributeSet>();
-	if (PlayerAttributeSet == nullptr)
+	const UPNPawnAttributeSet* AttributeSet = AbilitySystemComponent->GetSet<UPNPawnAttributeSet>();
+	if (AttributeSet == nullptr)
 	{
 		return;
 	}
@@ -73,7 +57,7 @@ void UPNPlayerStatusUserWidget::UpdateStatus(const FObjectKey TargetObjectKey) c
 				return;
 			}
 
-			ProgressBar->SetPercent(PlayerAttributeSet->GetHp() / PlayerAttributeSet->GetMaxHp());
+			ProgressBar->SetPercent(AttributeSet->GetHp() / AttributeSet->GetMaxHp());
 		}
 	default:
 		{

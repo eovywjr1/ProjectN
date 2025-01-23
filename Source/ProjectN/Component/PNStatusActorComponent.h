@@ -39,7 +39,6 @@ private:
 	
 	void OnOutOfHp() const;
 	void OnDamaged();
-	void OnPawnAttributeSetChanged(FGameplayAttribute Attribute);
 	
 	void SetPeaceOrFightStatus(const FGameplayTag StatusTag);
 	

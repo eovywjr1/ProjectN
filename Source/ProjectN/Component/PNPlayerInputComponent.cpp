@@ -7,27 +7,17 @@
 #include "PNEnhancedInputComponent.h"
 #include "PNGameplayTags.h"
 #include "PNPawnComponent.h"
-#include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Actor/PNCharacterPlayer.h"
 #include "Input/PNInputConfig.h"
 #include "InputMappingContext.h"
+#include "Engine/AssetManager.h"
 #include "Player/PNPlayerController.h"
 
 UPNPlayerInputComponent::UPNPlayerInputComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> ControlMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ProjectN/Input/IMC_Control.IMC_Control'"));
-	if (ControlMappingContextRef.Object)
-	{
-		ControlMappingContext = ControlMappingContextRef.Object;
-	}
-
-	static ConstructorHelpers::FObjectFinder<UInputMappingContext> CameraMappingContextRef(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/ProjectN/Input/IMC_Camera.IMC_Camera'"));
-	if (CameraMappingContextRef.Object)
-	{
-		CameraMappingContext = CameraMappingContextRef.Object;
-	}
+	bWantsInitializeComponent = true;
 }
 
 void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInputComponent)
@@ -43,13 +33,6 @@ void UPNPlayerInputComponent::InitializePlayerInput(UInputComponent* PlayerInput
 		ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer())->AddMappingContext(CameraMappingContext, 0);
 		EnableControlInput(true);
 	}
-
-	APawn* Owner = GetPawn<APawn>();
-	const UPNPawnComponent* PawnComponent = Owner->FindComponentByClass<UPNPawnComponent>();
-	const UPNPawnData* PawnData = PawnComponent->GetPawnData();
-	check(PawnData);
-	const UPNInputConfig* InputConfig = PawnData->InputConfig;
-	check(InputConfig);
 
 	const FPNGameplayTags& GameplayTags = FPNGameplayTags::Get();
 	UPNEnhancedInputComponent* PNEnhancedInputComponent = Cast<UPNEnhancedInputComponent>(PlayerInputComponent);
@@ -84,6 +67,46 @@ void UPNPlayerInputComponent::EnableControlInput(bool bEnable) const
 	else
 	{
 		Subsystem->RemoveMappingContext(ControlMappingContext);
+	}
+}
+
+void UPNPlayerInputComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	
+	const UAssetManager& AssetManager = UAssetManager::Get();
+	
+	{
+		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("PlayerInput")), FName(TEXT("IMC_Control")))));
+		if(AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		
+		ControlMappingContext = Cast<UInputMappingContext>(AssetPtr.Get());
+		check(ControlMappingContext);
+	}
+	
+	{
+		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("PlayerInput")), FName(TEXT("IMC_Camera")))));
+		if(AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		
+		CameraMappingContext = Cast<UInputMappingContext>(AssetPtr.Get());
+		check(CameraMappingContext);
+	}
+	
+	{
+		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("PlayerInput")), FName(TEXT("DA_PlayerInputConfig")))));
+		if(AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+		
+		InputConfig = Cast<UPNInputConfig>(AssetPtr.Get());
+		check(InputConfig);
 	}
 }
 

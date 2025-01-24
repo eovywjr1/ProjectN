@@ -6,11 +6,14 @@
 #include "PNPawnData.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "Engine/AssetManager.h"
 #include "Interface/PNAbilitySystemInterface.h"
 
 UPNPawnComponent::UPNPawnComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
+	bWantsInitializeComponent = true;
+
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 	PrimaryComponentTick.bCanEverTick = false;
 }
@@ -53,10 +56,43 @@ void UPNPawnComponent::InitializeAbilitySystem(UPNAbilitySystemComponent* InAbil
 	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
 }
 
+void UPNPawnComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+
+	const UAssetManager& AssetManager = UAssetManager::Get();
+	FName PawnDataFileName;
+
+	switch (ActorType)
+	{
+	case EActorType::Player:
+		{
+			PawnDataFileName = TEXT("DA_PlayerPawnData");
+			break;
+		}
+	default:
+		{
+			break;
+		}
+	}
+	
+	if(!PawnDataFileName.IsNone())
+	{
+		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("PawnData")), PawnDataFileName)));
+		if (AssetPtr.IsPending())
+		{
+			AssetPtr.LoadSynchronous();
+		}
+
+		PawnData = Cast<UPNPawnData>(AssetPtr.Get());
+		check(PawnData);
+	}
+}
+
 void UPNPawnComponent::BeginPlay()
 {
 	Super::BeginPlay();
-
+	
 	if (ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());

@@ -3,9 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/PawnComponent.h"
 
-#include "PNPawnComponent.generated.h"
+#include "PNActorExtensionComponent.generated.h"
 
 UENUM()
 enum class EActorType : uint8
@@ -23,7 +22,7 @@ class UPNAbilitySystemComponent;
 class UPNPawnData;
  
 UCLASS()
-class PROJECTN_API UPNPawnComponent : public UPawnComponent
+class PROJECTN_API UPNActorExtensionComponent : public UActorComponent
 {
 	GENERATED_BODY()
 	
@@ -33,7 +32,7 @@ public:
 	void InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor);
 	
 private:
-	UPNPawnComponent(const FObjectInitializer& ObjectInitializer);
+	UPNActorExtensionComponent(const FObjectInitializer& ObjectInitializer);
 	
 	virtual void InitializeComponent() override final; 
 	virtual void BeginPlay() override final;

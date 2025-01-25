@@ -8,7 +8,7 @@
 #include "Component/PNPlayerInputComponent.h"
 #include "Component/PNEquipmentComponent.h"
 #include "Component/PNInventoryComponent.h"
-#include "Component/PNPawnComponent.h"
+#include "Component/PNActorExtensionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/PNPlayerState.h"
 
@@ -20,7 +20,8 @@ APNCharacterPlayer::APNCharacterPlayer()
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
 	CreateDefaultSubobject<UPNEquipmentComponent>(TEXT("EquipmentComponent"));
-	PawnComponent->ActorType = EActorType::Player;
+	
+	ActorExtensionComponent->ActorType = EActorType::Player;
 
 	PrimaryActorTick.bCanEverTick = true;
 }
@@ -76,7 +77,7 @@ void APNCharacterPlayer::InitialComponents()
 	check(PlayerStateCast);
 
 	UAbilitySystemComponent* AbilitySystemComponent = PlayerStateCast->GetAbilitySystemComponent();
-	PawnComponent->InitializeAbilitySystem(Cast<UPNAbilitySystemComponent>(AbilitySystemComponent), PlayerStateCast);
+	ActorExtensionComponent->InitializeAbilitySystem(Cast<UPNAbilitySystemComponent>(AbilitySystemComponent), PlayerStateCast);
 
 	if (IsLocallyControlled())
 	{

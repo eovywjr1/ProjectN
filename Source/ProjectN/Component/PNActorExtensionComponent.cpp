@@ -3,7 +3,7 @@
 
 #include "PNActorExtensionComponent.h"
 
-#include "PNPawnData.h"
+#include "PNActorGameData.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Engine/AssetManager.h"
@@ -42,9 +42,9 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	if (Owner->HasAuthority() && PawnData)
+	if (Owner->HasAuthority() && ActorGameData)
 	{
-		for (const UPNAbilitySet* AbilitySet : PawnData->AbilitySets)
+		for (const UPNAbilitySet* AbilitySet : ActorGameData->AbilitySets)
 		{
 			if (AbilitySet)
 			{
@@ -63,13 +63,13 @@ void UPNActorExtensionComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	const UAssetManager& AssetManager = UAssetManager::Get();
-	FName PawnDataFileName;
+	FName ActorGameDataFileName;
 
 	switch (ActorType)
 	{
 	case EActorType::Player:
 		{
-			PawnDataFileName = TEXT("DA_PlayerPawnData");
+			ActorGameDataFileName = TEXT("PlayerGameData");
 			break;
 		}
 	default:
@@ -78,16 +78,16 @@ void UPNActorExtensionComponent::InitializeComponent()
 		}
 	}
 	
-	if(!PawnDataFileName.IsNone())
+	if(!ActorGameDataFileName.IsNone())
 	{
-		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("PawnData")), PawnDataFileName)));
+		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("ActorGameData")), ActorGameDataFileName)));
 		if (AssetPtr.IsPending())
 		{
 			AssetPtr.LoadSynchronous();
 		}
 
-		PawnData = Cast<UPNPawnData>(AssetPtr.Get());
-		check(PawnData);
+		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
+		check(ActorGameData);
 	}
 }
 

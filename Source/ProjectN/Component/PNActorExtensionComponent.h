@@ -19,7 +19,7 @@ enum class EActorType : uint8
  */
 
 class UPNAbilitySystemComponent;
-class UPNPawnData;
+class UPNActorGameData;
  
 UCLASS()
 class PROJECTN_API UPNActorExtensionComponent : public UActorComponent
@@ -27,7 +27,6 @@ class PROJECTN_API UPNActorExtensionComponent : public UActorComponent
 	GENERATED_BODY()
 	
 public:
-	const UPNPawnData* GetPawnData() const { return PawnData; }
 	UPNAbilitySystemComponent* GetAbilitySystemComponent() const { return AbilitySystemComponent; }
 	void InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor);
 	
@@ -42,7 +41,7 @@ public:
 	
 private:
 	UPROPERTY()
-	TObjectPtr<const UPNPawnData> PawnData = nullptr;
+	TObjectPtr<const UPNActorGameData> ActorGameData = nullptr;
 	
 	UPROPERTY()
 	TObjectPtr<UPNAbilitySystemComponent> AbilitySystemComponent = nullptr;

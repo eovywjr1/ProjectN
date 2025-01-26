@@ -60,9 +60,8 @@ void UPNDetectComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 		if (Owner->IsPlayerControlled())
 		{
 			DetectInteractableActor();
+			UpdateDetectedEnemy();
 		}
-
-		UpdateDetectedEnemy();
 	}
 }
 

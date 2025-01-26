@@ -146,6 +146,11 @@ bool UPNDetectComponent::IsDetectableEnemy(const AActor* Enemy) const
 	}
 
 	UPNStatusActorComponent* StatusActorComponent = Enemy->FindComponentByClass<UPNStatusActorComponent>();
+	if(StatusActorComponent == nullptr)
+	{
+		return false;
+	}
+	
 	if (StatusActorComponent->IsDead())
 	{
 		return false;

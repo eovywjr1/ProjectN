@@ -32,6 +32,9 @@ public:
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
+	
+private:
+	virtual void PostInitializeComponents() override final;
 
 protected:
 	UPROPERTY()

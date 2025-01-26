@@ -6,7 +6,6 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEnhancedInputComponent.h"
 #include "Component/PNPlayerInputComponent.h"
-#include "Component/PNEquipmentComponent.h"
 #include "Component/PNInventoryComponent.h"
 #include "Component/PNActorExtensionComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -19,11 +18,14 @@ APNCharacterPlayer::APNCharacterPlayer()
 
 	OverrideInputComponentClass = UPNEnhancedInputComponent::StaticClass();
 
-	CreateDefaultSubobject<UPNEquipmentComponent>(TEXT("EquipmentComponent"));
-	
-	ActorExtensionComponent->ActorType = EActorType::Player;
-
 	PrimaryActorTick.bCanEverTick = true;
+}
+
+void APNCharacterPlayer::PreInitializeComponents()
+{
+	Super::PreInitializeComponents();
+	
+	CreateActorComponent(EActorType::Player);
 }
 
 void APNCharacterPlayer::Tick(float DeltaSeconds)

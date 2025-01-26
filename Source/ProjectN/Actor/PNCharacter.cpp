@@ -19,8 +19,8 @@
 void APNCharacter::SetMaxWalkSpeed(const float InMaxSpeed)
 {
 	GetCharacterMovement()->MaxWalkSpeed = InMaxSpeed;
-	
-	if(!HasAuthority())
+
+	if (!HasAuthority())
 	{
 		ServerSetMaxWalkSpeed(InMaxSpeed);
 	}
@@ -82,13 +82,14 @@ APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
+}
 
-	/////////////////////////////////////////////////////////////////////////////////////////
-
-	ActorExtensionComponent = CreateDefaultSubobject<UPNActorExtensionComponent>(TEXT("ActorExtensionComponent"));
-	CreateDefaultSubobject<UPNStatusActorComponent>(TEXT("StatusActorComponent"));
-	CreateDefaultSubobject<UPNDetectComponent>(TEXT("DetectActorComponent"));
-	CreateDefaultSubobject<UPNSkillComponent>(TEXT("SkillActorComponent"));
+void APNCharacter::PostInitializeComponents()
+{
+	Super::PostInitializeComponents();
+	
+	ActorExtensionComponent = FindComponentByClass<UPNActorExtensionComponent>();
+	check(ActorExtensionComponent);
 }
 
 UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const

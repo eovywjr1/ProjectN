@@ -11,13 +11,13 @@ struct FInteractionDataTable : public FTableRowBase
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FORCEINLINE FName GetInteractionUIText() const { return InteractionUIText; }
-	FORCEINLINE float GetInteractionKeyPressTime() const { return InteractionKeyPressTime; }
+	FORCEINLINE FName GetUIText() const { return UIText; }
+	FORCEINLINE float GetKeyPressTime() const { return KeyPressTime; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
-	FName InteractionUIText;
-	
+	FName UIText;
+	 
 	UPROPERTY(EditDefaultsOnly)
-	float InteractionKeyPressTime = 0.0f;
+	float KeyPressTime = 0.0f;
 };

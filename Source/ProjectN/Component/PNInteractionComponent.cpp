@@ -12,15 +12,20 @@ bool UPNInteractionComponent::CanInteraction() const
 	return true;
 }
 
-bool UPNInteractionComponent::GetInteractionOption(FInteractionOption& InInteractionOption)
+FName UPNInteractionComponent::GetInteractionKey()
 {
 	if (!CanInteraction())
 	{
-		return false;
+		return NAME_None;
 	}
+
+	// Todo. 현재 테스트 용도, 인터렉션 데이터테이블 키를 NPC/Gimmick 데이터테이블 등에서 가져와야 함
+	FName InteractionDataTableKey = FName(TEXT("Test"));
 	
-	InInteractionOption.InteractionDataTableKey = InteractionDataTableKey;
-	InInteractionOption.InteractionTargetActorKey = GetOwner();
-	
-	return true;
+	return InteractionDataTableKey;
+}
+
+void UPNInteractionComponent::RequestInteraction()
+{
+
 }

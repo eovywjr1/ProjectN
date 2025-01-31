@@ -17,16 +17,24 @@ class PROJECTN_API UPNInteractionUserWidget : public UUserWidget
 	GENERATED_BODY()
 	
 public:
-	void OnDetectedInteractableActor(FInteractionOption InteractionOption);
+	void OnDetectedInteractableActor(const FObjectKey InteractionActorKey, const FName InteractionDataTableKey);
 	void OnUnDetectedInteractableActor();
 	
 private:
 	virtual void NativeConstruct() override final;
+	virtual FReply NativeOnKeyDown( const FGeometry& InGeometry, const FKeyEvent& InKeyEvent ) override final;
+	virtual FReply NativeOnKeyUp( const FGeometry& InGeometry, const FKeyEvent& InKeyEvent ) override final;
+	
+	void RequestInteraction() const;
 	
 private:
 	UPROPERTY(meta = (BindWidget))
 	TObjectPtr<UTextBlock> InteractionText;
 	
 	float InteractionKeyRequirePressTime = 0.0f;
-	float InteractionKeyPressTime = 0.0f;
+	
+	FName CurrentInteractionDataTableKey;
+	FObjectKey CurrentInteractionActorKey;
+	
+	FTimerHandle KeyPressTimerHandle;
 };

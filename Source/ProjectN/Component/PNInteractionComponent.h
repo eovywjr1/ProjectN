@@ -13,8 +13,7 @@ class PROJECTN_API UPNInteractionComponent : public UActorComponent
 
 public:
 	bool CanInteraction() const;
-	bool GetInteractionOption(FInteractionOption& InInteractionOption);
+	FName GetInteractionKey();
 	
-private:
-	FName InteractionDataTableKey;
+	void RequestInteraction();
 };

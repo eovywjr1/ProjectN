@@ -82,7 +82,7 @@ void UPNInteractionUserWidget::OnDetectedInteractableActor(const FObjectKey Inte
 
 	if (CurrentInteractionActorKey != InteractionActorKey && CurrentInteractionDataTableKey != InteractionDataTableKey)
 	{
-		if (const FInteractionDataTable* InteractionDataTable = UPNGameDataSubsystem::Get()->GetData<FInteractionDataTable>(InteractionDataTableKey))
+		if (const FInteractionDataTable* InteractionDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FInteractionDataTable>(InteractionDataTableKey))
 		{
 			InteractionText->SetText(FText::FromName(InteractionDataTable->GetUIText()));
 			InteractionKeyRequirePressTime = InteractionDataTable->GetKeyPressTime();

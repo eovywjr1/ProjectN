@@ -72,13 +72,18 @@ void UPNActorExtensionComponent::InitializeComponent()
 			ActorGameDataFileName = TEXT("PlayerGameData");
 			break;
 		}
+	case EActorType::NPC:
+		{
+			ActorGameDataFileName = TEXT("TestGameData");
+			break;
+		}
 	default:
 		{
 			break;
 		}
 	}
-	
-	if(!ActorGameDataFileName.IsNone())
+
+	if (!ActorGameDataFileName.IsNone())
 	{
 		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("ActorGameData")), ActorGameDataFileName)));
 		if (AssetPtr.IsPending())
@@ -94,7 +99,7 @@ void UPNActorExtensionComponent::InitializeComponent()
 void UPNActorExtensionComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
 	if (ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());

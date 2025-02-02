@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "PNCommonModule.h"
 #include "Blueprint/UserWidget.h"
 #include "PNInteractionUserWidget.generated.h"
 
@@ -33,7 +32,7 @@ private:
 	
 	float InteractionKeyRequirePressTime = 0.0f;
 	
-	FName CurrentInteractionDataTableKey;
+	FName CurrentInteractionKey;
 	FObjectKey CurrentInteractionActorKey;
 	
 	FTimerHandle KeyPressTimerHandle;

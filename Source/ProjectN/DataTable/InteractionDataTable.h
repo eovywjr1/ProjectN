@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "Engine/DataTable.h"
 #include "InteractionDataTable.Generated.h"
 
@@ -13,6 +14,7 @@ struct FInteractionDataTable : public FTableRowBase
 public:
 	FORCEINLINE FName GetUIText() const { return UIText; }
 	FORCEINLINE float GetKeyPressTime() const { return KeyPressTime; }
+	FORCEINLINE FGameplayTag GetInteractionAbilityTag() const { return InteractionAbilityTag; }
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -20,4 +22,7 @@ private:
 	 
 	UPROPERTY(EditDefaultsOnly)
 	float KeyPressTime = 0.0f;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FGameplayTag InteractionAbilityTag;
 };

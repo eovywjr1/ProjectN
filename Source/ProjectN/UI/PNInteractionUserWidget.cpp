@@ -48,13 +48,8 @@ FReply UPNInteractionUserWidget::NativeOnKeyUp(const FGeometry& InGeometry, cons
 
 void UPNInteractionUserWidget::RequestInteraction() const
 {
-	AActor* InteractableActor = Cast<AActor>(CurrentInteractionActorKey.ResolveObjectPtr());
-	check(InteractableActor);
-
-	UPNInteractionComponent* InteractionComponent = InteractableActor->FindComponentByClass<UPNInteractionComponent>();
-	check(InteractionComponent);
-
-	InteractionComponent->RequestInteraction();
+	UPNInteractionComponent* InteractionComponent = GetOwningPlayerPawn()->FindComponentByClass<UPNInteractionComponent>();
+	InteractionComponent->RequestInteraction(CurrentInteractionActorKey, CurrentInteractionKey);
 }
 
 void UPNInteractionUserWidget::OnDetectedInteractableActor(const FObjectKey InteractionActorKey, const FName InteractionDataTableKey)
@@ -80,7 +75,7 @@ void UPNInteractionUserWidget::OnDetectedInteractableActor(const FObjectKey Inte
 		return;
 	}
 
-	if (CurrentInteractionActorKey != InteractionActorKey && CurrentInteractionDataTableKey != InteractionDataTableKey)
+	if (CurrentInteractionActorKey != InteractionActorKey && CurrentInteractionKey != InteractionDataTableKey)
 	{
 		if (const FInteractionDataTable* InteractionDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FInteractionDataTable>(InteractionDataTableKey))
 		{
@@ -89,7 +84,7 @@ void UPNInteractionUserWidget::OnDetectedInteractableActor(const FObjectKey Inte
 		}
 	}
 
-	CurrentInteractionDataTableKey = InteractionDataTableKey;
+	CurrentInteractionKey = InteractionDataTableKey;
 	CurrentInteractionActorKey = InteractionActorKey;
 
 	UCanvasPanelSlot* CanvasSlot = Cast<UCanvasPanelSlot>(Slot);
@@ -105,6 +100,6 @@ void UPNInteractionUserWidget::OnUnDetectedInteractableActor()
 {
 	SetVisibility(ESlateVisibility::Hidden);
 
-	CurrentInteractionDataTableKey = NAME_None;
+	CurrentInteractionKey = NAME_None;
 	CurrentInteractionActorKey = FObjectKey();
 }

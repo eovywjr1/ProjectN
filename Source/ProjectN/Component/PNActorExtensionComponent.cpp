@@ -38,9 +38,9 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 	AActor* Owner = GetOwner();
 
 	AbilitySystemComponent = InAbilitySystemComponent;
-	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Owner);
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Owner);
 
 	if (Owner->HasAuthority() && ActorGameData)
 	{

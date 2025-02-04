@@ -8,8 +8,8 @@
 #include "Abilities/Tasks/AbilityTask_WaitDelay.h"
 #include "Abilities/Tasks/AbilityTask_WaitGameplayEvent.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
-#include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
+#include "AbilitySystem/Execution/PNDamageExecution.h"
 #include "AbilitySystem/TargetActor/PNTargetActor_HitCheckActor.h"
 #include "AbilitySystem/Task/PNAbilityTask_TraceToPawn.h"
 #include "Component/PNSkillComponent.h"
@@ -21,6 +21,8 @@ UPNGameplayAbility_Attack::UPNGameplayAbility_Attack()
 	  ChargeAttackAbilityTag(FGameplayTag())
 {
 	InstancingPolicy = EGameplayAbilityInstancingPolicy::InstancedPerActor;
+	NetExecutionPolicy = EGameplayAbilityNetExecutionPolicy::ServerOnly;
+
 	ActivationBlockedTags.AddTag(FPNGameplayTags::Get().Ability_Attack);
 }
 
@@ -50,7 +52,7 @@ void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 	UAbilityTask_WaitGameplayEvent* WaitEnableComboInputEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, FPNGameplayTags::Get().GameplayEvent_EnableComboInput);
 	WaitEnableComboInputEventTask->EventReceived.AddDynamic(this, &ThisClass::OnGameplayEvent);
 	WaitEnableComboInputEventTask->ReadyForActivation();
-	
+
 	UAbilityTask_WaitGameplayEvent* WaitDisableComboInputEventTask = UAbilityTask_WaitGameplayEvent::WaitGameplayEvent(this, FPNGameplayTags::Get().GameplayEvent_DisableComboInput);
 	WaitDisableComboInputEventTask->EventReceived.AddDynamic(this, &ThisClass::OnGameplayEvent);
 	WaitDisableComboInputEventTask->ReadyForActivation();
@@ -124,7 +126,12 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 		return;
 	}
 
-	FGameplayTag AttackTag = bChargeAttack ? ChargeAttackAbilityTag : BaseAttackAbilityTag;
+	FGameplayTag AttackTag = BaseAttackAbilityTag;
+	if (IsEnableChargeAttack())
+	{
+		AttackTag = ChargeAttackAbilityTag;
+	}
+
 	AttackData = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ExecuteNextCombo(AttackTag);
 	if (AttackData == nullptr)
 	{
@@ -230,4 +237,30 @@ void UPNGameplayAbility_Attack::EnableExecuteAttack() const
 void UPNGameplayAbility_Attack::DisableExecuteAttack() const
 {
 	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
+}
+
+bool UPNGameplayAbility_Attack::IsEnableChargeAttack() const
+{
+	if (!bChargeAttack)
+	{
+		return false;
+	}
+
+	const FAttackData* ChargeAttackData = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ExecuteNextCombo(ChargeAttackAbilityTag);
+	if (ChargeAttackData == nullptr)
+	{
+		return false;
+	}
+
+	if (ChargeAttackData->GameplayEffect)
+	{
+		const UGameplayEffect* AttackGameplayEffect = ChargeAttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
+		UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+		if (!AbilitySystemComponent->CanApplyAttributeModifiers(AttackGameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo), MakeEffectContext(CurrentSpecHandle, CurrentActorInfo)))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

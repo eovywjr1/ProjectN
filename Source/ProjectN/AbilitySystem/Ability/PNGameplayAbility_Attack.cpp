@@ -190,17 +190,22 @@ void UPNGameplayAbility_Attack::AttackHitCheck()
 
 void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
+	if (AttackData->GameplayEffect)
+	{
+		const UGameplayEffect* AttackGameplayEffect = AttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
+		ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, AttackGameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+	}
+
 	if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, 0))
 	{
 		UGameplayEffect* DamageEffect = NewObject<UGameplayEffect>(this, FName(TEXT("DamageEffect")));
 		DamageEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
 
-		UPNAbilitySystemComponent* AbilitySystemComponent = Cast<UPNAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
-		FGameplayModifierInfo StatusModifierInfo;
-		StatusModifierInfo.Attribute = UPNPawnAttributeSet::GetDamageAttribute();
-		StatusModifierInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(AbilitySystemComponent->GetSet<UPNWeaponAttributeSet>()->GetWeaponDamage()));
-		DamageEffect->Modifiers.Add(StatusModifierInfo);
+		FGameplayEffectExecutionDefinition ExecutionDefinition;
+		ExecutionDefinition.CalculationClass = UPNDamageExecution::StaticClass();
+		DamageEffect->Executions.Add(ExecutionDefinition);
 
+		UPNAbilitySystemComponent* AbilitySystemComponent = Cast<UPNAbilitySystemComponent>(GetAbilitySystemComponentFromActorInfo());
 		FGameplayEffectContextHandle EffectContextHandle = AbilitySystemComponent->MakeEffectContext();
 		EffectContextHandle.AddSourceObject(GetAvatarActorFromActorInfo());
 

@@ -74,7 +74,7 @@ void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Hand
 {
 	Cast<ACharacter>(ActorInfo->AvatarActor.Get())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
-	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
+	EnableExecuteAttack();
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
@@ -106,7 +106,7 @@ void UPNGameplayAbility_Attack::OnCompleteCallback()
 
 void UPNGameplayAbility_Attack::OnInterruptedCallback()
 {
-	if(GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->IsCurrentCombo(AttackData->AttackTag))
+	if (GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->IsCurrentCombo(AttackData->AttackTag))
 	{
 		return;
 	}
@@ -137,10 +137,11 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	{
 		return;
 	}
-	
-	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
 
-	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Attack, 1);
+	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+	AbilitySystemComponent->SetLooseGameplayTagCount(AttackTag, 1);
+
+	AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Attack, 1);
 	Cast<ACharacter>(GetAvatarActorFromActorInfo())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("ExecuteAttack"), AttackData->AttackActionMontage, 1.0f, AttackData->AttackActionMontageSectionName);
@@ -231,7 +232,14 @@ bool UPNGameplayAbility_Attack::IsEnableExecuteAttack() const
 
 void UPNGameplayAbility_Attack::EnableExecuteAttack() const
 {
-	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
+	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
+
+	AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 0);
+
+	if (AttackData)
+	{
+		AbilitySystemComponent->SetLooseGameplayTagCount(AttackData->AttackTag, 0);
+	}
 }
 
 void UPNGameplayAbility_Attack::DisableExecuteAttack() const

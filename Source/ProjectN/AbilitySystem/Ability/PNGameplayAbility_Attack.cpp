@@ -123,6 +123,7 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 {
 	if (!IsEnableExecuteAttack())
 	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 		return;
 	}
 
@@ -135,6 +136,7 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	AttackData = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ExecuteNextCombo(AttackTag);
 	if (AttackData == nullptr)
 	{
+		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 		return;
 	}
 
@@ -254,20 +256,10 @@ bool UPNGameplayAbility_Attack::IsEnableChargeAttack() const
 		return false;
 	}
 
-	const FAttackData* ChargeAttackData = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ExecuteNextCombo(ChargeAttackAbilityTag);
-	if (ChargeAttackData == nullptr)
+	const bool bEnableCombo = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->IsEnableNextCombo(ChargeAttackAbilityTag);
+	if (!bEnableCombo)
 	{
 		return false;
-	}
-
-	if (ChargeAttackData->GameplayEffect)
-	{
-		const UGameplayEffect* AttackGameplayEffect = ChargeAttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
-		UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
-		if (!AbilitySystemComponent->CanApplyAttributeModifiers(AttackGameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo), MakeEffectContext(CurrentSpecHandle, CurrentActorInfo)))
-		{
-			return false;
-		}
 	}
 
 	return true;

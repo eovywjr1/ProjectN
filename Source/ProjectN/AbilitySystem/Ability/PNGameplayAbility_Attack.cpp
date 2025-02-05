@@ -76,6 +76,11 @@ void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Hand
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
 	EnableExecuteAttack();
 
+	if (UPNSkillComponent* SkillComponent = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>())
+	{
+		SkillComponent->ClearCombo();
+	}
+
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 }
 
@@ -123,7 +128,6 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 {
 	if (!IsEnableExecuteAttack())
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 		return;
 	}
 
@@ -136,7 +140,6 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	AttackData = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ExecuteNextCombo(AttackTag);
 	if (AttackData == nullptr)
 	{
-		EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 		return;
 	}
 
@@ -165,7 +168,6 @@ void UPNGameplayAbility_Attack::OnGameplayEvent(FGameplayEventData Payload)
 	else if (Payload.EventTag == FPNGameplayTags::Get().GameplayEvent_DisableComboInput)
 	{
 		DisableExecuteAttack();
-		GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->ClearCombo();
 	}
 }
 

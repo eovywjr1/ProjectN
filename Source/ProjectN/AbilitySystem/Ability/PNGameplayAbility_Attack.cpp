@@ -143,6 +143,12 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	{
 		return;
 	}
+	
+	if (AttackData->GameplayEffect)
+	{
+		const UGameplayEffect* AttackGameplayEffect = AttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
+		ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, AttackGameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
+	}
 
 	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
 	AbilitySystemComponent->SetLooseGameplayTagCount(AttackTag, 1);
@@ -206,12 +212,6 @@ void UPNGameplayAbility_Attack::AttackHitCheck()
 
 void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAbilityTargetDataHandle& TargetDataHandle)
 {
-	if (AttackData->GameplayEffect)
-	{
-		const UGameplayEffect* AttackGameplayEffect = AttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
-		ApplyGameplayEffectToOwner(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, AttackGameplayEffect, GetAbilityLevel(CurrentSpecHandle, CurrentActorInfo));
-	}
-
 	if (UAbilitySystemBlueprintLibrary::TargetDataHasActor(TargetDataHandle, 0))
 	{
 		UGameplayEffect* DamageEffect = NewObject<UGameplayEffect>(this, FName(TEXT("DamageEffect")));

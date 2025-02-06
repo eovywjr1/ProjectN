@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "PNPlayerStatusUserWidget.generated.h"
+#include "PNStatusUserWidget.generated.h"
 
 class UTextBlock;
 class UProgressBar;
@@ -15,10 +15,9 @@ enum class EStatusType : uint8;
 /**
  * 
  */
- 
-// Todo. 추후 UPNPlayerStatusUserWidget->UPNStatusUserWidget으로 변경해야 함
+
 UCLASS()
-class PROJECTN_API UPNPlayerStatusUserWidget : public UUserWidget
+class PROJECTN_API UPNStatusUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 

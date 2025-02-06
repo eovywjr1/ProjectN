@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/PNPlayerStatusUserWidget.h"
+#include "UI/PNStatusUserWidget.h"
 
 #include "PNHUD.h"
 #include "PNLogChannels.h"
@@ -11,7 +11,7 @@
 #include "DataTable/StatusDataTable.h"
 #include "Kismet/KismetSystemLibrary.h"
 
-void UPNPlayerStatusUserWidget::NativeOnInitialized()
+void UPNStatusUserWidget::NativeOnInitialized()
 {
 	Super::NativeOnInitialized();
 
@@ -45,7 +45,7 @@ void UPNPlayerStatusUserWidget::NativeOnInitialized()
 	}
 }
 
-void UPNPlayerStatusUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
+void UPNStatusUserWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
 {
 	Super::NativeTick(MyGeometry, InDeltaTime);
 

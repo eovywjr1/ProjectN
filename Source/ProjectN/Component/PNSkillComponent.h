@@ -32,9 +32,13 @@ class PROJECTN_API UPNSkillComponent : public UPawnComponent
 public:
 	void InitComboTree();
 	FORCEINLINE void ClearCombo();
-	const FAttackData* ExecuteNextCombo(const FGameplayTag NextAttackTag);
 	bool IsEnableNextCombo(const FGameplayTag NextAttackTag) const;
 	FORCEINLINE bool IsCurrentCombo(const FGameplayTag AttackTag);
+	
+	const FAttackData* ExecuteNextCombo(const FGameplayTag NextAttackTag);
+	
+	UFUNCTION(Server, Reliable)
+	void ServerExecuteNextCombo(const FGameplayTag NextAttackTag);
 	
 private:
 	UPNSkillComponent(const FObjectInitializer& ObjectInitializer);

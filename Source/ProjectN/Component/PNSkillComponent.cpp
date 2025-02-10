@@ -17,7 +17,6 @@ void UPNSkillComponent::ClearCombo()
 const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAttackTag)
 {
 	check(CurrentComboNode.IsValid());
-	check(HasAuthority());
 
 	if (!IsEnableNextCombo(NextAttackTag))
 	{
@@ -27,7 +26,28 @@ const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAt
 	TWeakPtr<FComboNode>* NextComboNode = CurrentComboNode.Pin()->Children.Find(NextAttackTag);
 	CurrentComboNode = *NextComboNode;
 
+	if (!HasAuthority())
+	{
+		ServerExecuteNextCombo(NextAttackTag);
+	}
+
 	return CurrentComboNode.Pin()->ComboData;
+}
+
+void UPNSkillComponent::ServerExecuteNextCombo_Implementation(const FGameplayTag NextAttackTag)
+{
+	const FAttackData* CurrentComboData = ExecuteNextCombo(NextAttackTag);
+	if (CurrentComboData == nullptr)
+	{
+		return;
+	}
+
+	if (CurrentComboData->GameplayEffect)
+	{
+		UGameplayEffect* AttackGameplayEffect = CurrentComboData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
+		UPNAbilitySystemComponent* AbilitySystemComponent = Cast<IPNAbilitySystemInterface>(GetOwner())->GetPNAbilitySystemComponent();
+		AbilitySystemComponent->ApplyGameplayEffectToSelf(AttackGameplayEffect);
+	}
 }
 
 bool UPNSkillComponent::IsEnableNextCombo(const FGameplayTag NextAttackTag) const
@@ -68,6 +88,8 @@ UPNSkillComponent::UPNSkillComponent(const FObjectInitializer& ObjectInitializer
 	: Super(ObjectInitializer)
 {
 	bWantsInitializeComponent = true;
+	
+	SetIsReplicatedByDefault(true);
 
 	RootComboNode = CreateNode(nullptr);
 	CurrentComboNode = RootComboNode;

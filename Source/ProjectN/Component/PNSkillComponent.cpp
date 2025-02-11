@@ -3,6 +3,7 @@
 
 #include "Component/PNSkillComponent.h"
 
+#include "PNGameplayTags.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 #include "Interface/PNAbilitySystemInterface.h"
@@ -58,15 +59,9 @@ bool UPNSkillComponent::IsEnableNextCombo(const FGameplayTag NextAttackTag) cons
 		return false;
 	}
 
-	const FAttackData* NextComboData = NextComboNode->Pin()->ComboData;
-	if (NextComboData->GameplayEffect)
+	if (!IsEnableAttack(NextComboNode->Pin()->ComboData))
 	{
-		const UGameplayEffect* AttackGameplayEffect = NextComboData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
-		UAbilitySystemComponent* AbilitySystemComponent = Cast<IAbilitySystemInterface>(GetOwner())->GetAbilitySystemComponent();
-		if (!AbilitySystemComponent->CanApplyAttributeModifiers(AttackGameplayEffect, 1, AbilitySystemComponent->MakeEffectContext()))
-		{
-			return false;
-		}
+		return false;
 	}
 
 	return true;
@@ -84,11 +79,58 @@ bool UPNSkillComponent::IsCurrentCombo(const FGameplayTag AttackTag)
 	return CurrentComboData && CurrentComboData->AttackTag.MatchesTagExact(AttackTag);
 }
 
+bool UPNSkillComponent::IsEnableSkill(const FGameplayTag InputTag) const
+{
+	if (!InputTag.IsValid())
+	{
+		return false;
+	}
+
+	// 초기 테스트 용도로 하드 코딩
+	// Todo. 스킬 창이 구현되면 스킬 창에서 스킬 키에 등록된 데이터를 가져와야 함
+	const FGameplayTag InputSkillQTag = FPNGameplayTags::FindTagByString("InputTag.Attack.Skill.Q");
+	const FGameplayTag InputSkillETag = FPNGameplayTags::FindTagByString("InputTag.Attack.Skill.E");
+	const FGameplayTag InputSkillRTag = FPNGameplayTags::FindTagByString("InputTag.Attack.Skill.R");
+
+	FGameplayTag AbilitySkillTag;
+	const FAttackData* SkillData = nullptr;
+
+	if (InputTag.MatchesTagExact(InputSkillQTag))
+	{
+		AbilitySkillTag = FPNGameplayTags::FindTagByString("Ability.Attack.Skill.TestQ");
+	}
+	else if (InputTag.MatchesTagExact(InputSkillETag))
+	{
+		AbilitySkillTag = FPNGameplayTags::FindTagByString("Ability.Attack.Skill.TestE");
+	}
+	else if (InputTag.MatchesTagExact(InputSkillRTag))
+	{
+		AbilitySkillTag = FPNGameplayTags::FindTagByString("Ability.Attack.Skill.TestR");
+	}
+
+	if (TWeakPtr<FComboNode>* SkillNode = RootComboNode.Pin()->Children.Find(AbilitySkillTag))
+	{
+		SkillData = SkillNode->Pin()->ComboData;
+	}
+
+	if (SkillData == nullptr)
+	{
+		return false;
+	}
+
+	if (!IsEnableAttack(SkillData))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 UPNSkillComponent::UPNSkillComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
 	bWantsInitializeComponent = true;
-	
+
 	SetIsReplicatedByDefault(true);
 
 	RootComboNode = CreateNode(nullptr);
@@ -125,4 +167,24 @@ TWeakPtr<FComboNode> UPNSkillComponent::CreateNode(const FAttackData* InComboDat
 	ComboNodes.Add(MakeShared<FComboNode>(InComboData));
 
 	return ComboNodes.Last();
+}
+
+bool UPNSkillComponent::IsEnableAttack(const FAttackData* AttackData) const
+{
+	if (AttackData == nullptr)
+	{
+		return false;
+	}
+
+	if (AttackData->GameplayEffect)
+	{
+		const UGameplayEffect* AttackGameplayEffect = AttackData->GameplayEffect->GetDefaultObject<UGameplayEffect>();
+		UAbilitySystemComponent* AbilitySystemComponent = Cast<IAbilitySystemInterface>(GetOwner())->GetAbilitySystemComponent();
+		if (!AbilitySystemComponent->CanApplyAttributeModifiers(AttackGameplayEffect, 1, AbilitySystemComponent->MakeEffectContext()))
+		{
+			return false;
+		}
+	}
+
+	return true;
 }

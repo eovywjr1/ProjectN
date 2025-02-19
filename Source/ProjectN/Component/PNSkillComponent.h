@@ -37,6 +37,9 @@ public:
 	const FAttackData* ExecuteNextCombo(const FGameplayTag NextAttackTag);
 	
 	UFUNCTION(Server, Reliable)
+	void ServerClearCombo();
+	
+	UFUNCTION(Server, Reliable)
 	void ServerExecuteNextCombo(const FGameplayTag NextAttackTag);
 	
 	bool IsEnableSkill(const FGameplayTag InputTag) const;

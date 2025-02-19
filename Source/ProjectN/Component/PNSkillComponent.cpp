@@ -13,6 +13,11 @@ void UPNSkillComponent::ClearCombo()
 	check(RootComboNode.IsValid());
 
 	CurrentComboNode = RootComboNode;
+
+	if (!HasAuthority())
+	{
+		ServerClearCombo();
+	}
 }
 
 const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAttackTag)
@@ -33,6 +38,11 @@ const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAt
 	}
 
 	return CurrentComboNode.Pin()->ComboData;
+}
+
+void UPNSkillComponent::ServerClearCombo_Implementation()
+{
+	ClearCombo();
 }
 
 void UPNSkillComponent::ServerExecuteNextCombo_Implementation(const FGameplayTag NextAttackTag)

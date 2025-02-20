@@ -72,6 +72,9 @@ void UPNGameplayAbility_Attack::ActivateAbility(const FGameplayAbilitySpecHandle
 
 void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo, bool bReplicateEndAbility, bool bWasCancelled)
 {
+	bChargeAttack = false;
+	AttackData = nullptr;
+
 	Cast<ACharacter>(ActorInfo->AvatarActor.Get())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
 	EnableExecuteAttack();

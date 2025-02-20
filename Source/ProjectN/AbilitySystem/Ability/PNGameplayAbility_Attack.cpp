@@ -76,9 +76,12 @@ void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Hand
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
 	EnableExecuteAttack();
 
-	if (UPNSkillComponent* SkillComponent = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>())
+	if (!bWasCancelled)
 	{
-		SkillComponent->ClearCombo();
+		if (UPNSkillComponent* SkillComponent = GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>())
+		{
+			SkillComponent->ClearCombo();
+		}
 	}
 
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);

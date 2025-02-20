@@ -14,6 +14,7 @@ struct FSkillDataTable : public FTableRowBase
 	
 public:
 	void ApplySkillModifiers(UGameplayEffect& InSkillEffect) const;
+	void ApplyPostSkillModifiers(UGameplayEffect& InSkillEffect) const;
 
 	FORCEINLINE uint8 GetSkillDamage() const { return SkillDamage; }
 	FORCEINLINE uint8 GetGetSkillResource() const { return GetSkillResource; }

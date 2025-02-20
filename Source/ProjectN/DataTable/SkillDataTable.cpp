@@ -17,8 +17,18 @@ void FSkillDataTable::ApplySkillModifiers(UGameplayEffect& InSkillEffect) const
 	{
 		FGameplayModifierInfo StatusModifierInfo;
 		StatusModifierInfo.Attribute = UPNPlayerAttributeSet::GetSRAttribute();
-		const int8 SkillEffectSRAmount = GetGetSkillResource() - GetUseSkillResource();
+		const int8 SkillEffectSRAmount = GetUseSkillResource() * -1;
 		StatusModifierInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(SkillEffectSRAmount));
+		InSkillEffect.Modifiers.Add(StatusModifierInfo);
+	}
+}
+
+void FSkillDataTable::ApplyPostSkillModifiers(UGameplayEffect& InSkillEffect) const
+{
+	{
+		FGameplayModifierInfo StatusModifierInfo;
+		StatusModifierInfo.Attribute = UPNPlayerAttributeSet::GetSRAttribute();
+		StatusModifierInfo.ModifierMagnitude = FGameplayEffectModifierMagnitude(FScalableFloat(GetGetSkillResource()));
 		InSkillEffect.Modifiers.Add(StatusModifierInfo);
 	}
 }

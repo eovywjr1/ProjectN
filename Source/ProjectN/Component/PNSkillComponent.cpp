@@ -99,6 +99,27 @@ bool UPNSkillComponent::IsCurrentCombo(const FGameplayTag AttackTag)
 	return CurrentComboData && CurrentComboData->AttackTag.MatchesTagExact(AttackTag);
 }
 
+void UPNSkillComponent::ServerPostSkillProcess_Implementation(const bool bHit)
+{
+	if (bHit)
+	{
+		const FAttackData* CurrentComboData = CurrentComboNode.Pin()->ComboData;
+		if (CurrentComboData && !CurrentComboData->SkillDataTableIndex.IsNone())
+		{
+			UGameplayEffect* SkillEffect = NewObject<UGameplayEffect>(this, FName(TEXT("PostSkillEffect")));
+			SkillEffect->DurationPolicy = EGameplayEffectDurationType::Instant;
+
+			if (const FSkillDataTable* SkillDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FSkillDataTable>(CurrentComboData->SkillDataTableIndex))
+			{
+				SkillDataTable->ApplyPostSkillModifiers(*SkillEffect);
+			}
+
+			UPNAbilitySystemComponent* AbilitySystemComponent = Cast<IPNAbilitySystemInterface>(GetOwner())->GetPNAbilitySystemComponent();
+			AbilitySystemComponent->ApplyGameplayEffectToSelf(SkillEffect);
+		}
+	}
+}
+
 bool UPNSkillComponent::IsEnableSkill(const FGameplayTag InputTag) const
 {
 	if (!InputTag.IsValid())

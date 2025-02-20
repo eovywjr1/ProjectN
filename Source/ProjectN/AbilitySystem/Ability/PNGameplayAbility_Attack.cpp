@@ -232,6 +232,10 @@ void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAb
 			TargetStatusActorComponent->ServerRequestAttackDamage(AvatarActor, TargetActorCast);
 		}
 	}
+
+	const bool bHit = !TargetActors.IsEmpty();
+	UPNSkillComponent* AvatarSkillActorComponent = AvatarActor->FindComponentByClass<UPNSkillComponent>();
+	AvatarSkillActorComponent->ServerPostSkillProcess(bHit);
 }
 
 bool UPNGameplayAbility_Attack::IsEnableExecuteAttack() const

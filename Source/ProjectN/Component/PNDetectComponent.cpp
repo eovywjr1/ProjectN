@@ -44,8 +44,9 @@ void UPNDetectComponent::SetDetectTypeAndUpdateDetect(const EDetectType InDetect
 	UpdateDetectedEnemy();
 }
 
-UPNDetectComponent::UPNDetectComponent()
-	: CheckDetectEnemyDistance(DefaultCheckDetectEnemyDistance)
+UPNDetectComponent::UPNDetectComponent(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer),
+	  CheckDetectEnemyDistance(DefaultCheckDetectEnemyDistance)
 {
 	PrimaryComponentTick.bCanEverTick = true;
 }

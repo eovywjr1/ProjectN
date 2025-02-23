@@ -5,13 +5,13 @@
 #include "CoreMinimal.h"
 #include "Actor/PNCharacter.h"
 #include "Component/PNActorComponentCreatorInterface.h"
-#include "PNCharacterEnemy.generated.h"
+#include "PNCharacterMonster.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTN_API APNCharacterEnemy : public APNCharacter, public IPNActorComponentCreatorInterface
+class PROJECTN_API APNCharacterMonster : public APNCharacter, public IPNActorComponentCreatorInterface
 {
 	GENERATED_BODY()
 	

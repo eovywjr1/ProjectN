@@ -1,13 +1,13 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Actor/PNCharacterEnemy.h"
+#include "Actor/PNCharacterMonster.h"
 
 #include "Component/PNActorExtensionComponent.h"
 
-void APNCharacterEnemy::PreInitializeComponents()
+void APNCharacterMonster::PreInitializeComponents()
 {
 	Super::PreInitializeComponents();
 	
-	CreateActorComponent(EActorType::Enemy);
+	CreateActorComponent(EActorType::Monster);
 }

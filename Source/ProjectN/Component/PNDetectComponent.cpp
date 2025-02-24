@@ -13,12 +13,12 @@
 
 // 몬스터 감지 관련 기획이 나온 후 변경될 수 있음
 constexpr float DefaultDetectAngle = 90.0f;
-constexpr float DefaultCheckDetectEnemyDistance = 10.0f * static_cast<uint16>(EPNDistanceUnit::Meter);
-constexpr float LockOnCheckDetectEnemyDistance = 10.0f * static_cast<uint16>(EPNDistanceUnit::Meter);
+constexpr float DefaultCheckDetectEnemyDistance = 10.0f * Meter;
+constexpr float LockOnCheckDetectEnemyDistance = 10.0f * Meter;
 constexpr uint8 GridDivisionCount = 10;
 constexpr uint32 TotalGridPoints = GridDivisionCount * GridDivisionCount;
 
-constexpr float InteractDetectDistance = 2.0f * static_cast<uint16>(EPNDistanceUnit::Meter);
+constexpr float InteractDetectDistance = 2.0f * Meter;
 
 const FPNPercent DetectVisibleAreaRate(30);
 

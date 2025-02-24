@@ -3,19 +3,15 @@
 #include "CoreMinimal.h"
 #include "PNCommonModule.generated.h"
 
-extern const float CheckDetectEnemyPeriod;
+constexpr float CheckDetectEnemyPeriod = 1.0f;
+constexpr uint16 Meter = 100;
+constexpr uint16 DefaultMeasurementUnit = 100 * Meter;
 
 UENUM(BlueprintType)
 enum class EHitBoxShape : uint8
 {
 	Box,
 	Cone
-};
-
-enum class EPNDistanceUnit : uint16
-{
-	Meter = 100,
-	DefaultMeasurementUnit = 100 * Meter
 };
 
 USTRUCT(BlueprintType)

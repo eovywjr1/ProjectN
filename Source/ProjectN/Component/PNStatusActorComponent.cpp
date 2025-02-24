@@ -128,8 +128,7 @@ void UPNStatusActorComponent::ServerRequestAttackDamage_Implementation(AActor* S
 
 	// 초기 단계에서 러프하게 거리 검증
 	// 추후 무기/공격/스킬 기획에 따라 거리 검증이 변경될 수 있음
-	const float DefaultCheckAttackDistance = static_cast<float>(EPNDistanceUnit::DefaultMeasurementUnit);
-	if (SourceActor->GetDistanceTo(TargetActor) > DefaultCheckAttackDistance)
+	if (SourceActor->GetDistanceTo(TargetActor) > DefaultMeasurementUnit)
 	{
 		return;
 	}

@@ -79,15 +79,13 @@ void UPNDetectComponent::UpdateDetectedEnemy()
 
 void UPNDetectComponent::DetectEnemy(TArray<const AActor*>& InSortedDetectedEnemies) const
 {
-	AActor* Owner = GetOwner();
-	check(IsValid(Owner));
-
+	APawn* Owner = GetPawn<APawn>();
 	TArray<AActor*> ActorsToIgnore;
 	TArray<AActor*> OverlappingActors;
 	const FVector OwnerLocation = Owner->GetActorLocation();
-
-	// Todo. 적 타입 걸러야 함
-	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, CheckDetectEnemyDistance, TArray<TEnumAsByte<EObjectTypeQuery>>(), APawn::StaticClass(), ActorsToIgnore, OverlappingActors);
+	UClass* EnemyFilterClass = Owner->IsPlayerControlled() ? APNCharacterMonster::StaticClass() : APNCharacterPlayer::StaticClass();
+	
+	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, CheckDetectEnemyDistance, TArray<TEnumAsByte<EObjectTypeQuery>>(), EnemyFilterClass, ActorsToIgnore, OverlappingActors);
 
 	InSortedDetectedEnemies.Reserve(OverlappingActors.Num());
 
@@ -101,7 +99,6 @@ void UPNDetectComponent::DetectEnemy(TArray<const AActor*>& InSortedDetectedEnem
 		InSortedDetectedEnemies.Add(Actor);
 	}
 
-	// 정렬 기준이 추후 변경될 수 있음 
 	InSortedDetectedEnemies.Shrink();
 	InSortedDetectedEnemies.Sort([OwnerLocation](const AActor& A, const AActor& B)
 	{

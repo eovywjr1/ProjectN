@@ -7,6 +7,9 @@
 #include "PNInteractionComponent.h"
 #include "PNPercent.h"
 #include "PNStatusActorComponent.h"
+#include "Actor/PNCharacterMonster.h"
+#include "Actor/PNCharacterPlayer.h"
+#include "AI/PNAIController.h"
 #include "Components/CapsuleComponent.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/PNHUD.h"
@@ -56,12 +59,13 @@ void UPNDetectComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	APawn* Owner = GetOwner<APawn>();
-	if (Owner->IsLocallyControlled())
+	if (IsClientActor(Owner))
 	{
+		UpdateDetectedEnemy();
+
 		if (Owner->IsPlayerControlled())
 		{
 			DetectInteractableActor();
-			UpdateDetectedEnemy();
 		}
 	}
 }

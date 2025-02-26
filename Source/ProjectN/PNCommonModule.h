@@ -35,3 +35,5 @@ public:
 	UPROPERTY(EditDefaultsOnly, meta = (EditCondition = "Shape == EHitBoxShape::Box", EditConditionHides))
 	FVector BoxExtent = FVector::ZeroVector;
 };
+
+bool IsClientActor(const AActor* Actor);

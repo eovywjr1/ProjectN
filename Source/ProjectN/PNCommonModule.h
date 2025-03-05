@@ -36,4 +36,5 @@ public:
 	FVector BoxExtent = FVector::ZeroVector;
 };
 
+bool IsServerActor(const AActor* Actor);
 bool IsClientActor(const AActor* Actor);

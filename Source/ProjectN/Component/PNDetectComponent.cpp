@@ -52,6 +52,7 @@ UPNDetectComponent::UPNDetectComponent(const FObjectInitializer& ObjectInitializ
 	  CheckDetectEnemyDistance(DefaultCheckDetectEnemyDistance)
 {
 	PrimaryComponentTick.bCanEverTick = true;
+	SetIsReplicatedByDefault(true);
 }
 
 void UPNDetectComponent::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -88,7 +89,7 @@ void UPNDetectComponent::DetectEnemy(TArray<const AActor*>& InSortedDetectedEnem
 	TArray<AActor*> OverlappingActors;
 	const FVector OwnerLocation = Owner->GetActorLocation();
 	UClass* EnemyFilterClass = Owner->IsPlayerControlled() ? APNCharacterMonster::StaticClass() : APNCharacterPlayer::StaticClass();
-	
+
 	UKismetSystemLibrary::SphereOverlapActors(GetWorld(), OwnerLocation, CheckDetectEnemyDistance, TArray<TEnumAsByte<EObjectTypeQuery>>(), EnemyFilterClass, ActorsToIgnore, OverlappingActors);
 
 	InSortedDetectedEnemies.Reserve(OverlappingActors.Num());
@@ -147,11 +148,11 @@ bool UPNDetectComponent::IsDetectableEnemy(const AActor* Enemy) const
 	}
 
 	UPNStatusActorComponent* StatusActorComponent = Enemy->FindComponentByClass<UPNStatusActorComponent>();
-	if(StatusActorComponent == nullptr)
+	if (StatusActorComponent == nullptr)
 	{
 		return false;
 	}
-	
+
 	if (StatusActorComponent->IsDead())
 	{
 		return false;
@@ -278,12 +279,43 @@ bool UPNDetectComponent::IsDetectableEnemy(const AActor* Enemy) const
 
 void UPNDetectComponent::SetDetectedEnemy(const AActor* InDetectedEnemy)
 {
+	if (DetectedEnemy == InDetectedEnemy)
+	{
+		return;
+	}
+
 	DetectedEnemy = InDetectedEnemy;
 
 	if (IsValid(DetectedEnemy))
 	{
 		OnDetectedDelegate.Broadcast();
 	}
+
+	APawn* Owner = GetOwner<APawn>();
+	AController* OwnerController = Owner->GetController();
+	if (APNAIController* AIController = Cast<APNAIController>(OwnerController))
+	{
+		AIController->OnDetectedEnemy(DetectedEnemy);
+	}
+
+	// AIController는 클라이언트에서 없기 때문에 단순히 존재 유무만 판별
+	// 몬스터의 적은 플레이어만 가능하다는 가정 하에 플레이어(적)를 통한 RPC 호출
+	if ( IsClientActor(Owner) && InDetectedEnemy && (!OwnerController || !OwnerController->IsPlayerController()))
+	{
+ 		InDetectedEnemy->FindComponentByClass<UPNDetectComponent>()->ServerSetDetectedEnemy(this, InDetectedEnemy);
+	}
+}
+
+void UPNDetectComponent::ServerSetDetectedEnemy_Implementation(UPNDetectComponent* TargetComponent, const AActor* InDetectedEnemy)
+{
+	if (!IsValid(TargetComponent))
+	{
+		return;
+	}
+	
+	// Todo. 검증 추후 추가
+
+	TargetComponent->SetDetectedEnemy(InDetectedEnemy);
 }
 
 void UPNDetectComponent::DetectInteractableActor() const

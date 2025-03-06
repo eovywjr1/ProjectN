@@ -2,13 +2,13 @@
 
 #include "CoreMinimal.h"
 #include "PNDataTable.h"
-#include "PNAIDataTable.Generated.h"
+#include "AIDataTable.Generated.h"
 
 class UBehaviorTree;
 class UBlackboardData;
 
 USTRUCT()
-struct FPNAIDataTable : public FPNDataTable
+struct FAIDataTable : public FPNDataTable
 {
 	GENERATED_USTRUCT_BODY()
 

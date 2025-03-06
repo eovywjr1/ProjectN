@@ -5,7 +5,7 @@
 
 #include "PNAI.h"
 #include "BehaviorTree/BlackboardComponent.h"
-#include "DataTable/PNAIDataTable.h"
+#include "DataTable/AIDataTable.h"
 #include "Subsystem/PNGameDataSubsystem.h"
 
 void APNAIController::OnDetectedEnemy(const AActor* Enemy)
@@ -22,7 +22,7 @@ void APNAIController::OnPossess(APawn* InPawn)
 	Super::OnPossess(InPawn);
 
 	// Todo. 테스트 용도로 데이터테이블 키 하드코딩함, 추후 MonsterDataTable 혹은 SpawnDataTable 등에서 가져와야 함
-	if (const FPNAIDataTable* AIDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FPNAIDataTable>(TEXT("Test")))
+	if (const FAIDataTable* AIDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FAIDataTable>(TEXT("Test")))
 	{
 		UBlackboardData* BlackBoard = AIDataTable->GetBlackBoard();
 		UBehaviorTree* BehaviorTree = AIDataTable->GetBehaviorTree();

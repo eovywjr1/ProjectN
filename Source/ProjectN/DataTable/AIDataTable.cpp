@@ -1,21 +1,21 @@
 
-#include "PNAIDataTable.h"
+#include "AIDataTable.h"
 
 #include "BehaviorTree/BehaviorTree.h"
 #include "BehaviorTree/BlackboardData.h"
 #include "Engine/AssetManager.h"
 
-UBehaviorTree* FPNAIDataTable::GetBehaviorTree() const
+UBehaviorTree* FAIDataTable::GetBehaviorTree() const
 {
 	return Cast<UBehaviorTree>(BehaviorTreePath.ResolveObject());
 }
 
-UBlackboardData* FPNAIDataTable::GetBlackBoard() const
+UBlackboardData* FAIDataTable::GetBlackBoard() const
 {
 	return Cast<UBlackboardData>(BlackBoardPath.ResolveObject());
 }
 
-void FPNAIDataTable::PostLoadDataTable()
+void FAIDataTable::PostLoadDataTable()
 {
 	TArray<FSoftObjectPath> LoadAssets{BehaviorTreePath, BlackBoardPath};
 	UAssetManager::GetStreamableManager().RequestAsyncLoad(LoadAssets);

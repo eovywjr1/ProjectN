@@ -74,7 +74,7 @@ void UPNEquipmentComponent::OnInitializeAbilitySystem()
 		if (UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass))
 		{
 			GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent()->AddSpawnedAttribute(WeaponAttributeSet);
-			GetOwner()->FindComponentByClass<UPNSkillComponent>()->InitComboTree();
+			GetOwner()->FindComponentByClass<UPNSkillComponent>()->OnEquipWeapon();
 		}
 	}
 }

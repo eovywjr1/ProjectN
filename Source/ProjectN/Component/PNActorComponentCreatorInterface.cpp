@@ -37,6 +37,9 @@ void IPNActorComponentCreatorInterface::CreateActorComponent(EActorType ActorTyp
 
 			UPNStatusActorComponent* StatusComponent = NewObject<UPNStatusActorComponent>(SelfActor, TEXT("StatusComponent"));
 			StatusComponent->RegisterComponent();
+
+			UPNPawnSensingComponent* SensingComponent = NewObject<UPNPawnSensingComponent>(SelfActor, TEXT("SensingComponent"));
+			SensingComponent->RegisterComponent();
 		}
 	}
 

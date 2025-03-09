@@ -292,7 +292,7 @@ void UPNStatusActorComponent::SetPeaceOrFightStatus(const FGameplayTag StatusTag
 
 void UPNStatusActorComponent::CheckTransitionToPeaceTimerCallback()
 {
-	const AActor* DetectedEnemy = GetOwner()->FindComponentByClass<UPNDetectComponent>()->GetDetectedEnemy();
+	const AActor* DetectedEnemy = GetOwner()->FindComponentByClass<UPNDetectComponent>()->GetTargetedEnemy();
 	if (IsValid(DetectedEnemy))
 	{
 		NoEnemyDetectTime = 0.0f;

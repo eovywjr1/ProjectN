@@ -42,13 +42,19 @@ void IPNActorComponentCreatorInterface::CreateActorComponent(EActorType ActorTyp
 
 	if (ActorType == EActorType::Player)
 	{
-		UPNEquipmentComponent* EquipmentComponent = NewObject<UPNEquipmentComponent>(SelfActor, TEXT("EquipmentComponent"));
-		EquipmentComponent->RegisterComponent();
+		if (IsServerActor(SelfActor))
+		{
+			UPNEquipmentComponent* EquipmentComponent = NewObject<UPNEquipmentComponent>(SelfActor, TEXT("EquipmentComponent"));
+			EquipmentComponent->RegisterComponent();
 
-		UPNPlayerInputComponent* PNPlayerInputComponent = NewObject<UPNPlayerInputComponent>(SelfActor, TEXT("PlayerInputComponent"));
-		PNPlayerInputComponent->RegisterComponent();
+			UPNInventoryComponent* InventoryComponent = NewObject<UPNInventoryComponent>(SelfActor, TEXT("InventoryComponent"));
+			InventoryComponent->RegisterComponent();
+		}
 
-		UPNInventoryComponent* InventoryComponent = NewObject<UPNInventoryComponent>(SelfActor, TEXT("InventoryComponent"));
-		InventoryComponent->RegisterComponent();
+		if (IsClientActor(SelfActor))
+		{
+			UPNPlayerInputComponent* PNPlayerInputComponent = NewObject<UPNPlayerInputComponent>(SelfActor, TEXT("PlayerInputComponent"));
+			PNPlayerInputComponent->RegisterComponent();
+		}
 	}
 }

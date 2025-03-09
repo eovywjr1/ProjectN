@@ -180,13 +180,12 @@ void UPNStatusActorComponent::InitializeComponent()
 void UPNStatusActorComponent::OnInitializeAbilitySystem()
 {
 	AActor* Owner = GetOwner();
-	APNCharacter* OwnerCast = Cast<APNCharacter>(Owner);
 
-	if (Owner->HasAuthority())
+	if (IsServerActor(Owner))
 	{
-		UAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetAbilitySystemComponent();
-		check(AbilitySystemComponent);
-
+		APNCharacter* OwnerCast = Cast<APNCharacter>(Owner);
+		UPNAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetPNAbilitySystemComponent();
+	
 		// Todo. 데이터테이블과 연동해야 함	
 		if (OwnerCast && OwnerCast->GetController() && OwnerCast->GetController()->IsPlayerController())
 		{
@@ -216,8 +215,6 @@ void UPNStatusActorComponent::OnInitializeAbilitySystem()
 		AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Guard, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
 	}
 
-	if (IsClientActor(Owner))
-	{
 		Owner->FindComponentByClass<UPNDetectComponent>()->OnDetectedDelegate.AddUObject(this, &ThisClass::OnDetected);
 	}
 }

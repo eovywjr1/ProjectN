@@ -40,16 +40,17 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 		InAbilitySystemComponent = NewObject<UPNAbilitySystemComponent>(InOwnerActor);
 	}
 
-	if (!InAbilitySystemComponent->IsRegistered())
-	{
-		InAbilitySystemComponent->RegisterComponent();
-	}
-
 	AActor* Owner = GetOwner();
 
 	AbilitySystemComponent = InAbilitySystemComponent;
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	
+	if (!InAbilitySystemComponent->IsRegistered())
+	{
+		InAbilitySystemComponent->RegisterComponent();
+	}
+	
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Owner);
 
 	if (Owner->HasAuthority() && ActorGameData)
@@ -104,12 +105,7 @@ void UPNActorExtensionComponent::InitializeComponent()
 		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
 		check(ActorGameData);
 	}
-}
-
-void UPNActorExtensionComponent::BeginPlay()
-{
-	Super::BeginPlay();
-
+	
 	if (ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());

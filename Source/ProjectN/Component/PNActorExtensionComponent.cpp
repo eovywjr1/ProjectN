@@ -18,6 +18,16 @@ UPNActorExtensionComponent::UPNActorExtensionComponent(const FObjectInitializer&
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+UPNAbilitySystemComponent* UPNActorExtensionComponent::GetAbilitySystemComponent() const
+{
+	if(AbilitySystemComponent == nullptr)
+	{
+		AbilitySystemComponent = GetOwner()->FindComponentByClass<UPNAbilitySystemComponent>();
+	}
+
+	return AbilitySystemComponent;
+}
+
 void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemComponent* InAbilitySystemComponent, AActor* InOwnerActor)
 {
 	if (AbilitySystemComponent)

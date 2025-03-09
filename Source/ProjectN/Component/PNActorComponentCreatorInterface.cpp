@@ -8,6 +8,7 @@
 #include "PNEquipmentComponent.h"
 #include "PNInteractionComponent.h"
 #include "PNInventoryComponent.h"
+#include "PNPawnSensingComponent.h"
 #include "PNPlayerInputComponent.h"
 #include "PNSkillComponent.h"
 #include "PNStatusActorComponent.h"
@@ -26,14 +27,17 @@ void IPNActorComponentCreatorInterface::CreateActorComponent(EActorType ActorTyp
 
 	if (ActorType >= EActorType::Monster)
 	{
-		UPNSkillComponent* SkillComponent = NewObject<UPNSkillComponent>(SelfActor, TEXT("SkillComponent"));
-		SkillComponent->RegisterComponent();
+		if (IsServerActor(SelfActor))
+		{
+			UPNSkillComponent* SkillComponent = NewObject<UPNSkillComponent>(SelfActor, TEXT("SkillComponent"));
+			SkillComponent->RegisterComponent();
 
-		UPNDetectComponent* DetectComponent = NewObject<UPNDetectComponent>(SelfActor, TEXT("DetectComponent"));
-		DetectComponent->RegisterComponent();
+			UPNDetectComponent* DetectComponent = NewObject<UPNDetectComponent>(SelfActor, TEXT("DetectComponent"));
+			DetectComponent->RegisterComponent();
 
-		UPNStatusActorComponent* StatusComponent = NewObject<UPNStatusActorComponent>(SelfActor, TEXT("StatusComponent"));
-		StatusComponent->RegisterComponent();
+			UPNStatusActorComponent* StatusComponent = NewObject<UPNStatusActorComponent>(SelfActor, TEXT("StatusComponent"));
+			StatusComponent->RegisterComponent();
+		}
 	}
 
 	if (ActorType == EActorType::Player)

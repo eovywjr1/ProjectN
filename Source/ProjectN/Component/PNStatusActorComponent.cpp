@@ -278,7 +278,7 @@ void UPNStatusActorComponent::SetPeaceOrFightStatus(const FGameplayTag StatusTag
 	if (IPNAbilitySystemInterface* OwnerAbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>())
 	{
 		UPNAbilitySystemComponent* AbilitySystemComponent = OwnerAbilitySystemInterface->GetPNAbilitySystemComponent();
-		const FGameplayTag InverseStatusTag = StatusTag.MatchesTag(FPNGameplayTags::Get().Status_Peace) ? FPNGameplayTags::Get().Status_Peace : FPNGameplayTags::Get().Status_Fight;
+		const FGameplayTag InverseStatusTag = StatusTag.MatchesTag(FPNGameplayTags::Get().Status_Peace) ? FPNGameplayTags::Get().Status_Fight : FPNGameplayTags::Get().Status_Peace;
 
 		AbilitySystemComponent->SetAndReplicateGameplayTagCount(InverseStatusTag, -1);
 		AbilitySystemComponent->SetAndReplicateGameplayTagCount(StatusTag, 1);

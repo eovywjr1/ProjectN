@@ -185,7 +185,7 @@ void UPNStatusActorComponent::OnInitializeAbilitySystem()
 	{
 		APNCharacter* OwnerCast = Cast<APNCharacter>(Owner);
 		UPNAbilitySystemComponent* AbilitySystemComponent = GetOwner<IPNAbilitySystemInterface>()->GetPNAbilitySystemComponent();
-	
+
 		// Todo. 데이터테이블과 연동해야 함	
 		if (OwnerCast && OwnerCast->GetController() && OwnerCast->GetController()->IsPlayerController())
 		{
@@ -205,7 +205,7 @@ void UPNStatusActorComponent::OnInitializeAbilitySystem()
 		{
 			OwnerCast->OnInitializedStatus();
 		}
-		
+
 		SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Peace);
 
 		AbilitySystemComponent->RegisterGameplayTagEvent(FPNGameplayTags::Get().Action_Attack, EGameplayTagEventType::NewOrRemoved).AddUObject(this, &ThisClass::OnActionTagChanged);
@@ -310,7 +310,11 @@ void UPNStatusActorComponent::CheckTransitionToPeaceTimerCallback()
 
 void UPNStatusActorComponent::OnDetected()
 {
-	SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
+	UPNDetectComponent* DetectComponent = GetOwner()->FindComponentByClass<UPNDetectComponent>();
+	if (DetectComponent->GetTargetedEnemy())
+	{
+		SetPeaceOrFightStatus(FPNGameplayTags::Get().Status_Fight);
+	}
 }
 
 void UPNStatusActorComponent::OnActionTagChanged(const FGameplayTag Tag, int32 NewCount)

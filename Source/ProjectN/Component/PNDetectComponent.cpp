@@ -115,17 +115,7 @@ void UPNDetectComponent::SetTargetEnemy(APawn* InDetectedEnemy)
 
 	TargetedEnemy = InDetectedEnemy;
 
-	if (IsValid(TargetedEnemy))
-	{
-		OnDetectedDelegate.Broadcast();
-	}
-
-	APawn* Owner = GetOwner<APawn>();
-	AController* OwnerController = Owner->GetController();
-	if (APNAIController* AIController = Cast<APNAIController>(OwnerController))
-	{
-		AIController->OnDetectedEnemy(TargetedEnemy);
-	}
+	OnDetectedDelegate.Broadcast();
 }
 
 void UPNDetectComponent::DetectInteractableActor() const

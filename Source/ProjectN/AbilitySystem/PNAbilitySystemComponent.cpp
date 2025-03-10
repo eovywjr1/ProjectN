@@ -4,6 +4,7 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 
 #include "PNCommonModule.h"
+#include "Interface/PNAbilitySystemInterface.h"
 
 void UPNAbilitySystemComponent::AbilityInputPressed(FGameplayTag InputTag)
 {
@@ -84,4 +85,12 @@ void UPNAbilitySystemComponent::SetAndReplicateGameplayTagCount(const FGameplayT
 
 	SetLooseGameplayTagCount(GameplayTag, NewCount);
 	SetReplicatedLooseGameplayTagCount(GameplayTag, NewCount);
+}
+
+void UPNAbilitySystemComponent::InitializeComponent()
+{
+	Super::InitializeComponent();
+	
+	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
+	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
 }

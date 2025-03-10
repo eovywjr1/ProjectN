@@ -7,7 +7,6 @@
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Engine/AssetManager.h"
-#include "Interface/PNAbilitySystemInterface.h"
 
 UPNActorExtensionComponent::UPNActorExtensionComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -20,7 +19,7 @@ UPNActorExtensionComponent::UPNActorExtensionComponent(const FObjectInitializer&
 
 UPNAbilitySystemComponent* UPNActorExtensionComponent::GetAbilitySystemComponent() const
 {
-	if(AbilitySystemComponent == nullptr)
+	if (AbilitySystemComponent == nullptr)
 	{
 		AbilitySystemComponent = GetOwner()->FindComponentByClass<UPNAbilitySystemComponent>();
 	}
@@ -35,7 +34,7 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 		return;
 	}
 
-	if (ActorType < EActorType::Player)
+	if (InAbilitySystemComponent == nullptr)
 	{
 		InAbilitySystemComponent = NewObject<UPNAbilitySystemComponent>(InOwnerActor);
 	}
@@ -45,12 +44,12 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 	AbilitySystemComponent = InAbilitySystemComponent;
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
-	
+
 	if (!InAbilitySystemComponent->IsRegistered())
 	{
 		InAbilitySystemComponent->RegisterComponent();
 	}
-	
+
 	AbilitySystemComponent->InitAbilityActorInfo(InOwnerActor, Owner);
 
 	if (Owner->HasAuthority() && ActorGameData)
@@ -63,10 +62,6 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 			}
 		}
 	}
-
-	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
-	check(AbilitySystemInterface);
-	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
 }
 
 void UPNActorExtensionComponent::InitializeComponent()
@@ -105,7 +100,7 @@ void UPNActorExtensionComponent::InitializeComponent()
 		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
 		check(ActorGameData);
 	}
-	
+
 	if (ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());

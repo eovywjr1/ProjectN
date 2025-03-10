@@ -22,4 +22,7 @@ public:
 	FActiveGameplayEffectHandle ApplyGameplayEffectToSelf(UGameplayEffect* GameplayEffect);
 	
 	void SetAndReplicateGameplayTagCount(const FGameplayTag& GameplayTag, int32 NewCount);
+	
+private:
+	virtual void InitializeComponent() override final;
 };

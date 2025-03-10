@@ -4,9 +4,11 @@
 #include "PNActorExtensionComponent.h"
 
 #include "PNActorGameData.h"
+#include "PNCommonModule.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Engine/AssetManager.h"
+#include "Interface/PNAbilitySystemInterface.h"
 
 UPNActorExtensionComponent::UPNActorExtensionComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -62,6 +64,9 @@ void UPNActorExtensionComponent::InitializeAbilitySystem(UPNAbilitySystemCompone
 			}
 		}
 	}
+	
+	IPNAbilitySystemInterface* AbilitySystemInterface = GetOwner<IPNAbilitySystemInterface>();
+	AbilitySystemInterface->OnInitializeAbilitySystemDelegate.Broadcast();
 }
 
 void UPNActorExtensionComponent::InitializeComponent()
@@ -100,8 +105,13 @@ void UPNActorExtensionComponent::InitializeComponent()
 		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
 		check(ActorGameData);
 	}
+}
 
-	if (ActorType < EActorType::Player)
+void UPNActorExtensionComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	
+	if (IsServerActor(GetOwner()) && ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());
 	}

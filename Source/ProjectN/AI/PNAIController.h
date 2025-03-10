@@ -6,6 +6,7 @@
 #include "AIController.h"
 #include "PNAIController.generated.h"
 
+struct FMonsterDataTable;
 /**
  * 
  */
@@ -14,9 +15,12 @@ class PROJECTN_API APNAIController : public AAIController
 {
 	GENERATED_BODY()
 	
-public:
-	void OnDetectedEnemy(const AActor* Enemy);
+private:
+	virtual void OnPossess(APawn* InPawn) override final;
+	
+	UFUNCTION()
+	void OnDetectedEnemy();
 	
 private:
-	virtual void OnPossess(APawn* InPawn) override final; 
+	const FMonsterDataTable* MonsterDataTable = nullptr;
 };

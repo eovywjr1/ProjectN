@@ -105,11 +105,6 @@ void UPNActorExtensionComponent::InitializeComponent()
 		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
 		check(ActorGameData);
 	}
-}
-
-void UPNActorExtensionComponent::BeginPlay()
-{
-	Super::BeginPlay();
 	
 	if (IsServerActor(GetOwner()) && ActorType < EActorType::Player)
 	{

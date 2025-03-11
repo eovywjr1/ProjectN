@@ -6,10 +6,8 @@
 #include "PNCommonModule.h"
 #include "PNInteractionComponent.h"
 #include "PNPawnSensingComponent.h"
-#include "AI/PNAIController.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Net/UnrealNetwork.h"
-#include "UI/PNHUD.h"
 
 constexpr float InteractDetectDistance = 2.0f * Meter;
 
@@ -124,10 +122,7 @@ void UPNDetectComponent::SetTargetEnemy(APawn* InDetectedEnemy)
 void UPNDetectComponent::DetectInteractableActor() const
 {
 	APawn* Owner = GetOwner<APawn>();
-	if (!Owner->IsPlayerControlled())
-	{
-		return;
-	}
+	check(Owner->IsPlayerControlled());
 
 	constexpr float HalfInteractDetectDistance = InteractDetectDistance;
 	const FVector SpherePosition = Owner->GetActorLocation() + Owner->GetActorForwardVector() * HalfInteractDetectDistance;
@@ -143,7 +138,8 @@ void UPNDetectComponent::DetectInteractableActor() const
 	}
 #endif
 
-	bool bDetectedInteractableActor = false;
+	UPNInteractionComponent* OwnerInteractionComponent = Owner->FindComponentByClass<UPNInteractionComponent>();
+	TArray<AActor*> DetectedActors;
 	if (!OutHits.IsEmpty())
 	{
 		OutHits.Sort([OwnerLocation = Owner->GetActorLocation()](const FHitResult& A, const FHitResult& B)
@@ -155,38 +151,11 @@ void UPNDetectComponent::DetectInteractableActor() const
 
 		for (const FHitResult HitResult : OutHits)
 		{
-			AActor* HitActor = HitResult.GetActor();
-			UPNInteractionComponent* InteractComponent = HitActor->FindComponentByClass<UPNInteractionComponent>();
-			check(InteractComponent);
-
-			FName InteractionDataTableKey = InteractComponent->GetInteractionKey();
-			if (!InteractionDataTableKey.IsNone())
-			{
-				bDetectedInteractableActor = true;
-				ClientDetectInteractableActor(HitActor, InteractionDataTableKey);
-
-				break;
-			}
+			DetectedActors.Add(HitResult.GetActor());
 		}
 	}
-
-	if (!bDetectedInteractableActor)
-	{
-		ClientDetectInteractableActor(nullptr, NAME_None);
-	}
-}
-
-void UPNDetectComponent::ClientDetectInteractableActor_Implementation(AActor* DetectActor, FName InteractionDataTableKey) const
-{
-	APNHUD* HUD = Cast<APNHUD>(GetOwner<APawn>()->GetController<APlayerController>()->GetHUD());
-	if (DetectActor)
-	{
-		HUD->OnDetectedInteractableActorDelegate.Broadcast(DetectActor, InteractionDataTableKey);
-	}
-	else
-	{
-		HUD->OnUnDetectedInteractableActorDelegate.Broadcast();
-	}
+	
+	OwnerInteractionComponent->OnDetectInteractableActors(DetectedActors);
 }
 
 void UPNDetectComponent::OnSeePawn(APawn* Pawn)

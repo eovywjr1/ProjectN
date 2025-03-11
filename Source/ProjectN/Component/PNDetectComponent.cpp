@@ -41,14 +41,17 @@ void UPNDetectComponent::TickComponent(float DeltaTime, enum ELevelTick TickType
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	APawn* Owner = GetOwner<APawn>();
-	if (IsServerActor(Owner) && Owner->IsPlayerControlled())
+	if (IsServerActor(Owner))
 	{
 		if (!CanDetectEnemy(TargetedEnemy))
 		{
 			SetTargetNextPriorityEnemy();
 		}
 
-		DetectInteractableActor();
+		if (Owner->IsPlayerControlled())
+		{
+			DetectInteractableActor();
+		}
 	}
 }
 
@@ -72,7 +75,7 @@ void UPNDetectComponent::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 void UPNDetectComponent::SetTargetNextPriorityEnemy()
 {
 	UpdateDetectedPawns();
-	
+
 	if (DetectedEnemies.IsEmpty())
 	{
 		return;

@@ -4,6 +4,8 @@
 #include "PNDataTable.h"
 #include "EquipmentDataTable.Generated.h"
 
+class UPNAttributeSet;
+
 UENUM()
 enum class EEquipSlotType : uint8
 {
@@ -23,6 +25,10 @@ struct FEquipmentDataTable : public FPNDataTable
 public:
 	FORCEINLINE EEquipSlotType GetEquipSlotType() const { return EquipSlotType; }
 	const TArray<FName> GetStatusKeys() const { return StatusKeys; }
+	UClass* GetWeaponAttributeSetClass() const;
+	
+private:
+	virtual void PostLoadDataTable() override final;
 
 private:
 	UPROPERTY(EditDefaultsOnly)
@@ -30,4 +36,7 @@ private:
 	
 	UPROPERTY(EditDefaultsOnly)
 	TArray<FName> StatusKeys;
+	
+	UPROPERTY(EditDefaultsOnly)
+	FSoftClassPath WeaponAttributeSetPath;
 };

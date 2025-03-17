@@ -13,8 +13,6 @@
 
 void UPNEquipmentComponent::RequestEquip(const FName ItemKey)
 {
-	check(IsClientActor(GetOwner()));
-
 	if (!CanEquipItem(ItemKey))
 	{
 		return;

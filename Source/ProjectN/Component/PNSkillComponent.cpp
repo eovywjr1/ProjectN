@@ -38,7 +38,7 @@ const FAttackData* UPNSkillComponent::ExecuteNextCombo(const FGameplayTag NextAt
 	TWeakPtr<FComboNode>* NextComboNode = CurrentComboNode.Pin()->Children.Find(NextAttackTag);
 	CurrentComboNode = *NextComboNode;
 
-	if (!HasAuthority())
+	if (IsClientActor(GetOwner()))
 	{
 		ServerExecuteNextCombo(NextAttackTag);
 	}

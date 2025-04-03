@@ -38,7 +38,6 @@ void APNAIController::OnPossess(APawn* InPawn)
 			}
 		}
 	}
-}
 
 	if (UPNDetectComponent* DetectComponent = GetPawn()->FindComponentByClass<UPNDetectComponent>())
 	{

@@ -195,34 +195,14 @@ void UPNSkillComponent::InitComboTree()
 	RootComboNode = CreateNode(nullptr);
 	CurrentComboNode = RootComboNode;
 
-	// Todo. 임시, 콤보를 데이터테이블에서 가져오도록 변경해야 함
-	FName EquipItemDataTableIndex = GetOwner()->FindComponentByClass<UPNEquipmentComponent>()->GetEquipItemDataTableIndex(EEquipSlotType::Weapon);
-	if (EquipItemDataTableIndex == NAME_None)
-	{
-		return;
-	}
-
-	const FItemDataTable* ItemDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FItemDataTable>(EquipItemDataTableIndex);
-	if (ItemDataTable == nullptr)
-	{
-		return;
-	}
-
-	const FEquipmentDataTable* EquipmentDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FEquipmentDataTable>(ItemDataTable->GetEquipmentKey());
-	if (EquipmentDataTable == nullptr)
-	{
-		return;
-	}
-
-	UClass* WeaponAttributeSetClass = EquipmentDataTable->GetWeaponAttributeSetClass();
+	const UPNEquipmentComponent* EquipmentComponent = GetOwner()->FindComponentByClass<UPNEquipmentComponent>();
+	UClass* WeaponAttributeSetClass = EquipmentComponent->GetWeaponAttributeSetClass();
 	if (WeaponAttributeSetClass == nullptr)
 	{
 		return;
 	}
 
 	UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass);
-	/////////////////////////////////
-
 	for (TArray<FComboData>::TConstIterator Iter = WeaponAttributeSet->GetComboDatas(); Iter; ++Iter)
 	{
 		FComboNode* CurrentNode = RootComboNode.Pin().Get();

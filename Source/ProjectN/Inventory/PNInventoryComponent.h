@@ -6,12 +6,16 @@
 #include "Components/ActorComponent.h"
 #include "PNInventoryComponent.generated.h"
 
+USTRUCT()
 struct FPNInventorySlot
 {
+	GENERATED_BODY()
+
 public:
+	FPNInventorySlot();
 	FPNInventorySlot(const FName InItemKey, uint8 InStackCount);
 
-	FORCEINLINE FName GetItemKey() const { return ItemKey; }
+	FORCEINLINE const FName& GetItemKey() const { return ItemKey; }
 	FORCEINLINE uint8 GetStackCount() const { return StackCount; }
 	FORCEINLINE void AddStackCount(const uint8 InStackCount) { StackCount += InStackCount; }
 	FORCEINLINE void SubtractionStackCount(const uint8 InStackCount) { StackCount = FMath::Clamp(StackCount - InStackCount, 0, StackCount); }
@@ -19,7 +23,10 @@ public:
 	FORCEINLINE bool operator==(const FPNInventorySlot& Other) const { return ItemKey == Other.ItemKey; }
 	
 private:
+	UPROPERTY()
 	FName ItemKey;
+
+	UPROPERTY()
 	uint8 StackCount = 0;
 };
 
@@ -35,10 +42,21 @@ public:
 
 private:
 	UPNInventoryComponent();
+
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override final;
+
+	UFUNCTION(Server, Reliable)
+	void ServerAddItem(const FName ItemKey, const uint8 Count);
 	
 	uint8 RemoveItem(FPNInventorySlot* ItemSlot, const uint8 Count);
+
+	UFUNCTION()
+	void OnRep_Slots();
+
+	bool IsValidItem(const FName ItemKey) const;
+	bool IsEnableAddItem(const FName ItemKey, const uint8 Count) const;
 	
 private:
-	// Todo. 현재는 인벤토리 슬롯이 적을 것 같아 TArray만 사용하지만 추후 TMap을 같이 사용할 수도 있음
-	TArray<FPNInventorySlot> Inventory;
+	UPROPERTY(ReplicatedUsing = OnRep_Slots)
+	TArray<FPNInventorySlot> Slots;
 };

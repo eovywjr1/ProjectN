@@ -3,6 +3,7 @@
 
 #include "Component/PNSkillComponent.h"
 
+#include "PNActorExtensionComponent.h"
 #include "PNEquipmentComponent.h"
 #include "PNGameplayTags.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
@@ -28,12 +29,15 @@ void UPNSkillComponent::ClearCombo()
 const FAttackData* UPNSkillComponent::RequestNextCombo(const FGameplayTag NextAttackTag)
 {
 	check(CurrentComboNode.IsValid());
-	
+
 	if (!IsEnableNextCombo(NextAttackTag))
 	{
 		return nullptr;
 	}
 	
+	// 플레이어 StandAlone 혹은 AI 서버에서 ServerExecuteNextCombo가 늦게 호출되기 때문에 예측하기 위함
+	TWeakPtr<FComboNode>* NextComboNode = CurrentComboNode.Pin()->Children.Find(NextAttackTag);
+
 	if (!HasAuthority())
 	{
 		const bool bExecuteNextCombo = TryNextCombo(NextAttackTag);
@@ -42,13 +46,10 @@ const FAttackData* UPNSkillComponent::RequestNextCombo(const FGameplayTag NextAt
 			return nullptr;
 		}
 	}
+	
+	ServerExecuteNextCombo(NextAttackTag);
 
-	if (IsClientActor(GetOwner()))
-	{
-		ServerExecuteNextCombo(NextAttackTag);
-	}
-
-	return CurrentComboNode.Pin()->ComboData;
+	return NextComboNode->Pin()->ComboData;
 }
 
 void UPNSkillComponent::ServerClearCombo_Implementation()
@@ -63,7 +64,7 @@ void UPNSkillComponent::ServerExecuteNextCombo_Implementation(const FGameplayTag
 	{
 		return;
 	}
-	
+
 	const FAttackData* CurrentComboData = CurrentComboNode.Pin()->ComboData;
 	if (CurrentComboData && !CurrentComboData->SkillDataTableIndex.IsNone())
 	{
@@ -187,6 +188,11 @@ void UPNSkillComponent::OnEquipWeapon()
 	InitComboTree();
 }
 
+void UPNSkillComponent::OnAIPossessed()
+{
+	InitComboTree();
+}
+
 void UPNSkillComponent::InitComboTree()
 {
 	ComboNodes.Empty();
@@ -194,19 +200,28 @@ void UPNSkillComponent::InitComboTree()
 	RootComboNode = CreateNode(nullptr);
 	CurrentComboNode = RootComboNode;
 
-	const UPNEquipmentComponent* EquipmentComponent = GetOwner()->FindComponentByClass<UPNEquipmentComponent>();
-	UClass* WeaponAttributeSetClass = EquipmentComponent->GetWeaponAttributeSetClass();
-	if (WeaponAttributeSetClass == nullptr)
+	const UPNActorExtensionComponent* ActorExtensionComponent = GetOwner()->FindComponentByClass<UPNActorExtensionComponent>();
+	const TArray<FComboData>* ComboArray = nullptr;
+
+	if (ActorExtensionComponent->IsPlayerActor())
+	{
+		ComboArray = GetPlayerComboDatas();
+	}
+	else if (ActorExtensionComponent->IsMonsterActor())
+	{
+		ComboArray = GetMonsterComboDatas();
+	}
+
+	if (ComboArray == nullptr)
 	{
 		return;
 	}
 
-	UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass);
-	for (TArray<FComboData>::TConstIterator Iter = WeaponAttributeSet->GetComboDatas(); Iter; ++Iter)
+	for (const FComboData& ComboData : *ComboArray)
 	{
 		FComboNode* CurrentNode = RootComboNode.Pin().Get();
 
-		for (const FAttackData& AttackData : Iter->ComboAttackDatas)
+		for (const FAttackData& AttackData : ComboData.ComboAttackDatas)
 		{
 			TWeakPtr<FComboNode>* ChildComboNode = CurrentNode->Children.Find(AttackData.AttackTag);
 			if (ChildComboNode == nullptr)
@@ -218,6 +233,33 @@ void UPNSkillComponent::InitComboTree()
 			CurrentNode = ChildComboNode->Pin().Get();
 		}
 	}
+}
+
+const TArray<FComboData>* UPNSkillComponent::GetPlayerComboDatas()
+{
+	const UPNEquipmentComponent* EquipmentComponent = GetOwner()->FindComponentByClass<UPNEquipmentComponent>();
+	UClass* WeaponAttributeSetClass = EquipmentComponent->GetWeaponAttributeSetClass();
+	if (WeaponAttributeSetClass == nullptr)
+	{
+		return nullptr;
+	}
+
+	UPNWeaponAttributeSet* WeaponAttributeSet = NewObject<UPNWeaponAttributeSet>(this, WeaponAttributeSetClass);
+	return WeaponAttributeSet->GetComboDatas();
+}
+
+const TArray<FComboData>* UPNSkillComponent::GetMonsterComboDatas() const
+{
+	UPNActorExtensionComponent* ActorExtensionComponent = GetOwner()->FindComponentByClass<UPNActorExtensionComponent>();
+	check(ActorExtensionComponent);
+
+	const UPNPawnGameData* MonsterGameData = Cast<UPNPawnGameData>(ActorExtensionComponent->GetActorGameData());
+	if (MonsterGameData == nullptr)
+	{
+		return nullptr;
+	}
+
+	return MonsterGameData->GetComboDatas();
 }
 
 TWeakPtr<FComboNode> UPNSkillComponent::CreateNode(const FAttackData* InComboData)

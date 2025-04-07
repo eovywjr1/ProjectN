@@ -31,6 +31,7 @@ class PROJECTN_API UPNSkillComponent : public UPawnComponent
 
 public:
 	void OnEquipWeapon();
+	void OnAIPossessed();
 
 	FORCEINLINE void ClearCombo();
 	bool IsEnableNextCombo(const FGameplayTag NextAttackTag) const;
@@ -52,7 +53,9 @@ private:
 	UPNSkillComponent(const FObjectInitializer& ObjectInitializer);
 
 	TWeakPtr<FComboNode> CreateNode(const FAttackData* InComboData);
-	void InitComboTree();	
+	void InitComboTree();
+	const TArray<FComboData>* GetPlayerComboDatas();
+	const TArray<FComboData>* GetMonsterComboDatas() const;
 	
 	bool IsEnableAttack(const FAttackData* AttackData) const;
 	bool TryNextCombo(const FGameplayTag NextAttackTag);

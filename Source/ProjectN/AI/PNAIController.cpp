@@ -6,7 +6,9 @@
 #include "PNAI.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Component/PNDetectComponent.h"
+#include "Component/PNSkillComponent.h"
 #include "DataTable/AIDataTable.h"
+#include "DataTable/MonsterDataTable.h"
 #include "Subsystem/PNGameDataSubsystem.h"
 
 void APNAIController::OnDetectedEnemy()
@@ -23,18 +25,22 @@ void APNAIController::OnPossess(APawn* InPawn)
 {
 	Super::OnPossess(InPawn);
 
-	// Todo. 테스트 용도로 데이터테이블 키 하드코딩함, 추후 MonsterDataTable 혹은 SpawnDataTable 등에서 가져와야 함
-	if (const FAIDataTable* AIDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FAIDataTable>(TEXT("Test")))
+	// Todo. 테스트 용도로 데이터테이블 키 하드코딩함, 추후 스폰할 때 가져와야 함
+	MonsterDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FMonsterDataTable>(TEXT("0"));
+	if (MonsterDataTable)
 	{
-		UBlackboardData* BlackBoard = AIDataTable->GetBlackBoard();
-		UBehaviorTree* BehaviorTree = AIDataTable->GetBehaviorTree();
-
-		if (BlackBoard && BehaviorTree)
+		if (const FAIDataTable* AIDataTable = MonsterDataTable->GetAIDataTable(GetWorld()))
 		{
-			UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
-			if (UseBlackboard(BlackBoard, BlackboardComponent))
+			UBlackboardData* BlackBoard = AIDataTable->GetBlackBoard();
+			UBehaviorTree* BehaviorTree = AIDataTable->GetBehaviorTree();
+
+			if (BlackBoard && BehaviorTree)
 			{
-				RunBehaviorTree(BehaviorTree);
+				UBlackboardComponent* BlackboardComponent = GetBlackboardComponent();
+				if (UseBlackboard(BlackBoard, BlackboardComponent))
+				{
+					RunBehaviorTree(BehaviorTree);
+				}
 			}
 		}
 	}
@@ -42,5 +48,10 @@ void APNAIController::OnPossess(APawn* InPawn)
 	if (UPNDetectComponent* DetectComponent = GetPawn()->FindComponentByClass<UPNDetectComponent>())
 	{
 		DetectComponent->OnDetectedDelegate.AddUObject(this, &ThisClass::OnDetectedEnemy);
+	}
+	
+	if (UPNSkillComponent* SkillComponent = GetPawn()->FindComponentByClass<UPNSkillComponent>())
+	{
+		SkillComponent->OnAIPossessed();
 	}
 }

@@ -8,7 +8,9 @@
 #include "Actor/PNActorGameData.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
+#include "DataTable/MonsterDataTable.h"
 #include "Engine/AssetManager.h"
+#include "Subsystem/PNGameDataSubsystem.h"
 
 UPNActorExtensionComponent::UPNActorExtensionComponent(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
@@ -74,19 +76,30 @@ void UPNActorExtensionComponent::InitializeComponent()
 	Super::InitializeComponent();
 
 	const UAssetManager& AssetManager = UAssetManager::Get();
-	FName ActorGameDataFileName;
 
 	switch (ActorType)
 	{
 	case EActorType::Player:
 		{
-			ActorGameDataFileName = TEXT("PlayerGameData");
+			const FName ActorGameDataFileName = TEXT("PlayerGameData");
+			FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("ActorGameData")), ActorGameDataFileName)));
+			if (AssetPtr.IsPending())
+			{
+				AssetPtr.LoadSynchronous();
+			}
+
+			ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
+			check(ActorGameData);
+
 			break;
 		}
-	case EActorType::NPC:
+
+	case EActorType::Monster:
 		{
-			ActorGameDataFileName = TEXT("TestGameData");
-			break;
+			const FMonsterDataTable* MonsterDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FMonsterDataTable>(TEXT("0"));
+			check(MonsterDataTable);
+
+			ActorGameData = Cast<UPNActorGameData>(MonsterDataTable->GetMonsterGameData());
 		}
 	default:
 		{
@@ -94,18 +107,6 @@ void UPNActorExtensionComponent::InitializeComponent()
 		}
 	}
 
-	if (!ActorGameDataFileName.IsNone())
-	{
-		FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("ActorGameData")), ActorGameDataFileName)));
-		if (AssetPtr.IsPending())
-		{
-			AssetPtr.LoadSynchronous();
-		}
-
-		ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
-		check(ActorGameData);
-	}
-	
 	if (IsServerActor(GetOwner()) && ActorType < EActorType::Player)
 	{
 		InitializeAbilitySystem(nullptr, GetOwner());

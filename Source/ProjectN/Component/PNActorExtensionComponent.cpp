@@ -4,8 +4,8 @@
 #include "PNActorExtensionComponent.h"
 
 #include "PNAbilitySystemUserInterface.h"
-#include "PNActorGameData.h"
 #include "PNCommonModule.h"
+#include "Actor/PNActorGameData.h"
 #include "AbilitySystem/PNAbilitySet.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Engine/AssetManager.h"

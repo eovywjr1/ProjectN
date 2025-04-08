@@ -6,6 +6,9 @@
 #include "GameFramework/PlayerController.h"
 #include "PNPlayerController.generated.h"
 
+class UPNInputConfig;
+class UInputMappingContext;
+
 /**
  * 
  */
@@ -37,6 +40,10 @@ private:
 	
 	void SetLockOnTarget();
 
+	void LoadInputData();
+
+	void ToggleInventory();
+
 private:
 	APawn* LockOnTargetActor = nullptr;
 
@@ -44,4 +51,10 @@ private:
 	FTimerHandle ClearLockOnTargetTimerHandle;
 	
 	float LastRotationYaw = 0.0f;
+
+	UPROPERTY()
+	TObjectPtr<UPNInputConfig> InputConfig = nullptr;
+	
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> UIInputMappingContext = nullptr;
 };

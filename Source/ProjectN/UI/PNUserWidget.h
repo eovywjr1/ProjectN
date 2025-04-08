@@ -4,16 +4,18 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
-#include "UPNUserWidget.generated.h"
+#include "PNUserWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class PROJECTN_API UUPNUserWidget : public UUserWidget
+class PROJECTN_API UPNUserWidget : public UUserWidget
 {
 	GENERATED_BODY()
 
+	friend class APNHUD;
+	
 protected:
 	UFUNCTION(BlueprintCallable)
 	void ToggleVisibility();

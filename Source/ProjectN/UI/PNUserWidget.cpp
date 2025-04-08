@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "UI/UPNUserWidget.h"
+#include "UI/PNUserWidget.h"
 
-void UUPNUserWidget::ToggleVisibility()
+void UPNUserWidget::ToggleVisibility()
 {
 	const ESlateVisibility NewVisibility = GetVisibility() == ESlateVisibility::Visible ? ESlateVisibility::Hidden : ESlateVisibility::Visible;
 	SetVisibility(NewVisibility);

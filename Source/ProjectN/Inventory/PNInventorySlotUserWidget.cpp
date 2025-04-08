@@ -3,19 +3,10 @@
 
 #include "Inventory/PNInventorySlotUserWidget.h"
 
-#include "DataTable/ItemDataTable.h"
-#include "Subsystem/PNGameDataSubsystem.h"
-
-void UPNInventorySlotUserWidget::UpdateSlot()
+void UPNInventorySlotUserWidget::UpdateSlot(const FName InItemKey, const uint8 InStackCount)
 {
-	const FItemDataTable* ItemDataTable = UPNGameDataSubsystem::Get(GetWorld())->GetData<FItemDataTable>(ItemKey);
-
-	if (ItemDataTable == nullptr)
-	{
-		ensure(false);
-		return;
-	}
-
-	// ItemDataTable->GetItemImage()
+	ItemKey = InItemKey;
+	StackCount = InStackCount;
+	
 	// Image update
 }

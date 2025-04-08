@@ -15,12 +15,12 @@ class PROJECTN_API UPNInventorySlotUserWidget : public UPNUserWidget
 	GENERATED_BODY()
 
 public:
-	void UpdateSlot();
+	void UpdateSlot(const FName InItemKey, const uint8 InStackCount);
 
 protected:
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY()
 	FName ItemKey;
 
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadOnly)
 	uint8 StackCount = 0;
 };

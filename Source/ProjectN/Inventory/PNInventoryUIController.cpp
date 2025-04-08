@@ -32,19 +32,22 @@ void UPNInventoryUIController::OnUpdateInventory()
 			check(ItemKey.IsValid() && ItemKey != NAME_None);
 			
 			CurrentItemKeys.Add(ItemKey);
+
+			UPNUserWidget* InventorySlotWidget = nullptr;
 			
 			if (TObjectPtr<UPNUserWidget>* Widget = InventorySlotWidgets.Find(InventorySlot.GetItemKey()))
 			{
-				UPNInventorySlotUserWidget* InventorySlotWidget = Cast<UPNInventorySlotUserWidget>(*Widget);
+				InventorySlotWidget = *Widget;
 				check(InventorySlotWidget);
-
-				InventorySlotWidget->UpdateSlot();
 			}
 			else
 			{
-				UPNUserWidget* NewSlotUserWidget = AddInventorySlotUserWidget();
-				InventorySlotWidgets.Add(InventorySlot.GetItemKey(), NewSlotUserWidget);
+				InventorySlotWidget = AddInventorySlotUserWidget();
+				InventorySlotWidgets.Add(InventorySlot.GetItemKey(), InventorySlotWidget);
 			}
+
+			UPNInventorySlotUserWidget* CastInventorySlotWidget = Cast<UPNInventorySlotUserWidget>(InventorySlotWidget);
+			CastInventorySlotWidget->UpdateSlot(ItemKey, InventorySlot.GetStackCount());
 		}
 
 		TArray<FName> ItemKeysToRemove;

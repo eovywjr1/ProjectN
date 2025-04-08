@@ -82,8 +82,8 @@ UPNInventoryComponent::UPNInventoryComponent()
 {
 	SetIsReplicatedByDefault(true);
 
-	// Todo. 최대슬롯 20은 임시, 추후 정해야 함
-	const uint8 InventorySlotCount = 20;
+	// Todo. 최대슬롯 임시, 추후 정해야 함
+	const uint8 InventorySlotCount = 50;
 	Slots.Reserve(InventorySlotCount);
 }
 

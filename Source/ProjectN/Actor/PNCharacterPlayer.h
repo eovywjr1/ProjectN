@@ -31,6 +31,8 @@ private:
 	
 	void InitializeAbilitySystemComponent();
 	
+	virtual UPNActorGameData* GetActorGameData() const override final;
+	
 private:
 	float RunTargetRotationYaw = 0.0f;
 };

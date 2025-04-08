@@ -3,10 +3,12 @@
 
 #include "Actor/PNCharacterPlayer.h"
 
+#include "PNActorGameData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEnhancedInputComponent.h"
 #include "Component/PNPlayerInputComponent.h"
 #include "Component/PNActorExtensionComponent.h"
+#include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Player/PNPlayerState.h"
 
@@ -31,21 +33,24 @@ void APNCharacterPlayer::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	if (!IsRun())
+	if (Controller)
 	{
-		RunTargetRotationYaw = 0.0f;
+		if (!IsRun())
+		{
+			RunTargetRotationYaw = 0.0f;
+		}
+
+		FRotator TargetRotation = GetActorRotation();
+		TargetRotation.Yaw = Controller->GetControlRotation().Yaw;
+
+		if (RunTargetRotationYaw != 0.0f)
+		{
+			TargetRotation.Yaw += RunTargetRotationYaw;
+		}
+
+		const FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaSeconds, 10.0f);
+		SetActorRotation(NewRotation);
 	}
-
-	FRotator TargetRotation = GetActorRotation();
-	TargetRotation.Yaw = Controller->GetControlRotation().Yaw;
-
-	if (RunTargetRotationYaw != 0.0f)
-	{
-		TargetRotation.Yaw += RunTargetRotationYaw;
-	}
-
-	const FRotator NewRotation = FMath::RInterpTo(GetActorRotation(), TargetRotation, DeltaSeconds, 10.0f);
-	SetActorRotation(NewRotation);
 }
 
 void APNCharacterPlayer::PossessedBy(AController* NewController)
@@ -76,6 +81,21 @@ void APNCharacterPlayer::InitializeAbilitySystemComponent()
 
 	UAbilitySystemComponent* AbilitySystemComponent = PlayerStateCast->GetAbilitySystemComponent();
 	ActorExtensionComponent->InitializeAbilitySystem(Cast<UPNAbilitySystemComponent>(AbilitySystemComponent), PlayerStateCast);
+}
+
+UPNActorGameData* APNCharacterPlayer::GetActorGameData() const
+{
+	const FName ActorGameDataFileName = TEXT("PlayerGameData");
+	const UAssetManager& AssetManager = UAssetManager::Get();
+	FSoftObjectPtr AssetPtr(AssetManager.GetPrimaryAssetPath(FPrimaryAssetId(FName(TEXT("ActorGameData")), ActorGameDataFileName)));
+	if (AssetPtr.IsPending())
+	{
+		AssetPtr.LoadSynchronous();
+	}
+
+	UPNActorGameData* ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
+	
+	return ActorGameData;
 }
 
 void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)

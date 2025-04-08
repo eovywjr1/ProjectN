@@ -6,7 +6,6 @@
 #include "PNActorGameData.h"
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "Component/PNEnhancedInputComponent.h"
-#include "Component/PNPlayerInputComponent.h"
 #include "Component/PNActorExtensionComponent.h"
 #include "Engine/AssetManager.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -65,13 +64,6 @@ void APNCharacterPlayer::OnRep_PlayerState()
 	Super::OnRep_PlayerState();
 
 	InitializeAbilitySystemComponent();
-}
-
-void APNCharacterPlayer::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-
-	FindComponentByClass<UPNPlayerInputComponent>()->InitializePlayerInput(InputComponent);
 }
 
 void APNCharacterPlayer::InitializeAbilitySystemComponent()

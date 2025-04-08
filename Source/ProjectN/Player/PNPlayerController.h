@@ -4,7 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "GameplayTagContainer.h"
 #include "PNPlayerController.generated.h"
+
+struct FInputActionValue;
 
 class UPNInputConfig;
 class UInputMappingContext;
@@ -18,6 +21,7 @@ class PROJECTN_API APNPlayerController : public APlayerController
 	GENERATED_BODY()
 
 public:
+	void EnableControlInput(bool bEnable) const;
 	bool CanCameraInputControl() const;
 
 	void RotationByInput(const FVector2D LookAxisVector);
@@ -41,7 +45,13 @@ private:
 	void SetLockOnTarget();
 
 	void LoadInputData();
-
+	void Input_AbilityPressed(FGameplayTag InputTag);
+	void Input_AbilityReleased(FGameplayTag InputTag);
+	void Input_Look(const FInputActionValue& InputActionValue);
+	void Input_Move(const FInputActionValue& InputActionValue);
+	void Input_LockOn(const FInputActionValue& InputActionValue);
+	void Input_NextLockOnTarget(const FInputActionValue& InputActionValue);
+	
 	void ToggleInventory();
 
 private:
@@ -51,9 +61,17 @@ private:
 	FTimerHandle ClearLockOnTargetTimerHandle;
 	
 	float LastRotationYaw = 0.0f;
-
+	
+	bool bIsActivatedLockOn = false;
+	
 	UPROPERTY()
 	TObjectPtr<UPNInputConfig> InputConfig = nullptr;
+	
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> ControlMappingContext = nullptr;
+	
+	UPROPERTY()
+	TObjectPtr<UInputMappingContext> CameraMappingContext = nullptr;
 	
 	UPROPERTY()
 	TObjectPtr<UInputMappingContext> UIInputMappingContext = nullptr;

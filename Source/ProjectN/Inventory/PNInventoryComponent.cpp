@@ -3,9 +3,10 @@
 
 #include "PNInventoryComponent.h"
 
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Net/Core/PushModel/PushModel.h"
-#include "Subsystem/PNGameDataSubsystem.h"
+#include "UI/PNHUD.h"
 
 FPNInventorySlot::FPNInventorySlot()
 	: ItemKey(NAME_None),
@@ -141,8 +142,9 @@ uint8 UPNInventoryComponent::RemoveItem(FPNInventorySlot* ItemSlot, const uint8 
 
 void UPNInventoryComponent::OnRep_Slots()
 {
-	// Todo. UpdateUI
-	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Green, TEXT("디버그 메시지"));
+	APlayerController* PlayerController = UGameplayStatics::GetPlayerController(GetWorld(), 0);
+	APNHUD* HUD = Cast<APNHUD>(PlayerController->GetHUD());
+	HUD->OnUpdateInventoryDelegate.Broadcast();
 }
 
 bool UPNInventoryComponent::IsValidItem(const FName ItemKey) const

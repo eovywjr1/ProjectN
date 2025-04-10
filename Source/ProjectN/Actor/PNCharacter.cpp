@@ -6,13 +6,12 @@
 #include "AbilitySystem/PNAbilitySystemComponent.h"
 #include "AbilitySystem/AttributeSet/PNPawnAttributeSet.h"
 #include "Component/PNCharacterMovementComponent.h"
-#include "Component/PNDetectComponent.h"
 #include "Component/PNActorExtensionComponent.h"
 #include "Component/PNSkillComponent.h"
-#include "Component/PNStatusActorComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/Controller.h"
+#include "Net/UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -60,20 +59,32 @@ void APNCharacter::SetDead()
 	}
 }
 
+void APNCharacter::SetMovable(bool bInMovable)
+{
+	if (bMovable == bInMovable)
+	{
+		return;
+	}
+	
+	bMovable = bInMovable;
+	
+	if(IsClientActor(this))
+	{
+		ServerSetMovable(bInMovable);
+	}
+}
+
 APNCharacter::APNCharacter(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer.SetDefaultSubobjectClass<UPNCharacterMovementComponent>(ACharacter::CharacterMovementComponentName))
+	, bMovable(true)
 {
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
-	// Don't rotate when the controller rotates. Let that just affect the camera.
-	bUseControllerRotationPitch = false;
-	bUseControllerRotationYaw = false;
-	bUseControllerRotationRoll = false;
-
 	// Configure character movement
 	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
 	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
+	GetCharacterMovement()->SetIsReplicated(true);
 
 	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
 	// instead of recompiling to adjust them
@@ -90,6 +101,18 @@ void APNCharacter::PostInitializeComponents()
 
 	ActorExtensionComponent = FindComponentByClass<UPNActorExtensionComponent>();
 	check(ActorExtensionComponent);
+}
+
+void APNCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	
+	DOREPLIFETIME(ThisClass, bMovable);
+}
+
+void APNCharacter::ServerSetMovable_Implementation(bool InIsMovable)
+{
+	bMovable = InIsMovable;
 }
 
 UAbilitySystemComponent* APNCharacter::GetAbilitySystemComponent() const

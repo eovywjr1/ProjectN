@@ -86,13 +86,18 @@ UPNActorGameData* APNCharacterPlayer::GetActorGameData() const
 	}
 
 	UPNActorGameData* ActorGameData = Cast<UPNActorGameData>(AssetPtr.Get());
-	
+
 	return ActorGameData;
 }
 
 void APNCharacterPlayer::MoveByInput(const FVector2D MovementVector)
 {
 	check(Controller);
+
+	if (!IsMovable())
+	{
+		return;
+	}
 
 	if (IsRun() && MovementVector.Y >= 0.0f && FMath::Abs(MovementVector.X) > 0.0f)
 	{

@@ -33,12 +33,20 @@ public:
 	void OnInitializedStatus() const;
 
 	virtual void SetDead();
+	
+	void SetMovable(bool bInMovable);
+	FORCEINLINE bool IsMovable() const { return bMovable; }
+	FORCEINLINE bool IsAttackable() const { return bMovable; }
 
 protected:
 	APNCharacter(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 private:
 	virtual void PostInitializeComponents() override final;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override final;
+	
+	UFUNCTION(Server, Reliable)
+	void ServerSetMovable(bool InIsMovable);
 
 protected:
 	UPROPERTY()
@@ -47,4 +55,7 @@ protected:
 private:
 	UPROPERTY(EditDefaultsOnly)
 	TObjectPtr<UAnimMontage> DeadMontage;
+	
+	UPROPERTY(Replicated)
+	bool bMovable;
 };

@@ -11,10 +11,9 @@
 #include "AbilitySystem/AttributeSet/PNWeaponAttributeSet.h"
 #include "AbilitySystem/TargetActor/PNTargetActor_HitCheckActor.h"
 #include "AbilitySystem/Task/PNAbilityTask_TraceToPawn.h"
+#include "Actor/PNCharacter.h"
 #include "Component/PNSkillComponent.h"
 #include "Component/PNStatusActorComponent.h"
-#include "GameFramework/Character.h"
-#include "GameFramework/CharacterMovementComponent.h"
 
 UPNGameplayAbility_Attack::UPNGameplayAbility_Attack()
 	: BaseAttackAbilityTag(FGameplayTag()),
@@ -33,7 +32,13 @@ bool UPNGameplayAbility_Attack::CanActivateAbility(const FGameplayAbilitySpecHan
 		return false;
 	}
 
-	if (!ActorInfo->AvatarActor->IsA(ACharacter::StaticClass()))
+	APNCharacter* Character = Cast<APNCharacter>(GetAvatarActorFromActorInfo());
+	if (Character == nullptr)
+	{
+		return false;
+	}
+
+	if (!Character->IsAttackable())
 	{
 		return false;
 	}
@@ -75,7 +80,9 @@ void UPNGameplayAbility_Attack::EndAbility(const FGameplayAbilitySpecHandle Hand
 	bChargeAttack = false;
 	AttackData = nullptr;
 
-	Cast<ACharacter>(ActorInfo->AvatarActor.Get())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_Walking);
+	APNCharacter* Character = Cast<APNCharacter>(GetAvatarActorFromActorInfo());
+	Character->SetMovable(true);
+	
 	GetAbilitySystemComponentFromActorInfo()->RemoveLooseGameplayTag(FPNGameplayTags::Get().Action_Attack, 1);
 	EnableExecuteAttack();
 
@@ -153,11 +160,12 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 		}
 	}
 
+	APNCharacter* Character = Cast<APNCharacter>(GetAvatarActorFromActorInfo());
+	Character->SetMovable(false);
+
 	UAbilitySystemComponent* AbilitySystemComponent = GetAbilitySystemComponentFromActorInfo();
 	AbilitySystemComponent->SetLooseGameplayTagCount(AttackTag, 1);
-
 	AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Attack, 1);
-	Cast<ACharacter>(GetAvatarActorFromActorInfo())->GetCharacterMovement()->SetMovementMode(EMovementMode::MOVE_None);
 
 	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("ExecuteAttack"), AttackData->AttackActionMontage, 1.0f, AttackData->AttackActionMontageSectionName);
 	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleteCallback);

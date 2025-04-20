@@ -119,8 +119,6 @@ bool UPNStatusActorComponent::IsDead() const
 
 void UPNStatusActorComponent::ServerRequestAttackDamage_Implementation(AActor* SourceActor, const AActor* TargetActor)
 {
-	check(GetOwner()->HasAuthority());
-
 	if (SourceActor == nullptr || TargetActor == nullptr)
 	{
 		return;

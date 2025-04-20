@@ -117,13 +117,14 @@ void UPNGameplayAbility_Attack::InputReleased(const FGameplayAbilitySpecHandle H
 	}
 }
 
-void UPNGameplayAbility_Attack::OnCompleteCallback()
+void UPNGameplayAbility_Attack::OnCompleteMontageCallback()
 {
 	EndAbility(CurrentSpecHandle, CurrentActorInfo, CurrentActivationInfo, false, false);
 }
 
-void UPNGameplayAbility_Attack::OnInterruptedCallback()
+void UPNGameplayAbility_Attack::OnInterruptedMontageCallback()
 {
+	// 같은 공격으로 콤보를 진행하면 어빌리티를 종료하지 않음
 	if (GetAvatarActorFromActorInfo()->FindComponentByClass<UPNSkillComponent>()->IsCurrentCombo(AttackData->AttackTag))
 	{
 		return;
@@ -146,7 +147,7 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 
 	// Charge가 불가능할 경우 기본 공격이 수행
 	FGameplayTag AttackTag = BaseAttackAbilityTag;
-	if (IsEnableChargeAttack())
+	if (IsChargeAttack())
 	{
 		AttackTag = ChargeAttackAbilityTag;
 	}
@@ -168,8 +169,8 @@ void UPNGameplayAbility_Attack::ExecuteAttack()
 	AbilitySystemComponent->SetLooseGameplayTagCount(FPNGameplayTags::Get().Action_Attack, 1);
 
 	UAbilityTask_PlayMontageAndWait* PlayAttackTask = UAbilityTask_PlayMontageAndWait::CreatePlayMontageAndWaitProxy(this, TEXT("ExecuteAttack"), AttackData->AttackActionMontage, 1.0f, AttackData->AttackActionMontageSectionName);
-	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleteCallback);
-	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnInterruptedCallback);
+	PlayAttackTask->OnCompleted.AddDynamic(this, &ThisClass::OnCompleteMontageCallback);
+	PlayAttackTask->OnInterrupted.AddDynamic(this, &ThisClass::OnInterruptedMontageCallback);
 	PlayAttackTask->ReadyForActivation();
 }
 
@@ -235,17 +236,7 @@ void UPNGameplayAbility_Attack::OnAttackHitTraceResultCallback(const FGameplayAb
 			continue;
 		}
 
-		check(AvatarActor->IsPlayerControlled() || TargetActorCast->IsPlayerControlled());
-
-		if (AvatarActor->IsPlayerControlled())
-		{
-			AvatarStatusActorComponent->ServerRequestAttackDamage(AvatarActor, TargetActorCast);
-		}
-		else if (TargetActorCast->IsPlayerControlled())
-		{
-			UPNStatusActorComponent* TargetStatusActorComponent = TargetActorCast->FindComponentByClass<UPNStatusActorComponent>();
-			TargetStatusActorComponent->ServerRequestAttackDamage(AvatarActor, TargetActorCast);
-		}
+		AvatarStatusActorComponent->ServerRequestAttackDamage(AvatarActor, TargetActorCast);
 	}
 
 	const bool bHit = !TargetActors.IsEmpty();
@@ -275,7 +266,7 @@ void UPNGameplayAbility_Attack::DisableExecuteAttack() const
 	GetAbilitySystemComponentFromActorInfo()->SetLooseGameplayTagCount(FPNGameplayTags::Get().Ability_Attack, 1);
 }
 
-bool UPNGameplayAbility_Attack::IsEnableChargeAttack() const
+bool UPNGameplayAbility_Attack::IsChargeAttack() const
 {
 	if (!bChargeAttack)
 	{

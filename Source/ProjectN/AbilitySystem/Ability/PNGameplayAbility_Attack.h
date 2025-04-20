@@ -37,10 +37,10 @@ private:
 	virtual void InputReleased(const FGameplayAbilitySpecHandle Handle, const FGameplayAbilityActorInfo* ActorInfo, const FGameplayAbilityActivationInfo ActivationInfo) override final;
 	
 	UFUNCTION()
-	void OnCompleteCallback();
+	void OnCompleteMontageCallback();
 	
 	UFUNCTION()
-	void OnInterruptedCallback();
+	void OnInterruptedMontageCallback();
 	
 	UFUNCTION()
 	void OnTransitionChargeTimerCallback();
@@ -53,7 +53,7 @@ private:
 	bool IsEnableExecuteAttack() const;
 	void EnableExecuteAttack() const;
 	void DisableExecuteAttack() const;
-	bool IsEnableChargeAttack() const;
+	bool IsChargeAttack() const;
 	
 	void AttackHitCheck();
 	

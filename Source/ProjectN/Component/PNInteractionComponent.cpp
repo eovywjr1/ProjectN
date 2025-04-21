@@ -53,19 +53,23 @@ void UPNInteractionComponent::OnDetectInteractableActors(TArray<AActor*>& Sorted
 
 		break;
 	}
-	
-	APNHUD* HUD = Cast<APNHUD>(GetOwner<APawn>()->GetController<APlayerController>()->GetHUD());
-	if (DetectedInteractableActor)
-	{
-		const UPNInteractionComponent* TargetInteractionComponent = DetectedInteractableActor->FindComponentByClass<UPNInteractionComponent>();
-		const FName TargetInteractionDataTableKey = TargetInteractionComponent->GetInteractionDataTableKey();
-		check(TargetInteractionComponent->CanInteraction());
 
-		HUD->OnDetectedInteractableActorDelegate.Broadcast(DetectedInteractableActor, TargetInteractionDataTableKey);
-	}
-	else
+	if (APlayerController* PlayerController = GetOwner<APawn>()->GetController<APlayerController>())
 	{
-		HUD->OnUnDetectedInteractableActorDelegate.Broadcast();
+		APNHUD* HUD = Cast<APNHUD>(PlayerController->GetHUD());
+		
+		if (DetectedInteractableActor)
+		{
+			const UPNInteractionComponent* TargetInteractionComponent = DetectedInteractableActor->FindComponentByClass<UPNInteractionComponent>();
+			const FName TargetInteractionDataTableKey = TargetInteractionComponent->GetInteractionDataTableKey();
+			check(TargetInteractionComponent->CanInteraction());
+
+			HUD->OnDetectedInteractableActorDelegate.Broadcast(DetectedInteractableActor, TargetInteractionDataTableKey);
+		}
+		else
+		{
+			HUD->OnUnDetectedInteractableActorDelegate.Broadcast();
+		}
 	}
 }
 
